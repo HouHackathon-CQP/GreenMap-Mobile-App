@@ -8,12 +8,9 @@ import kotlinx.coroutines.flow.asStateFlow
 import javax.inject.Inject
 
 @HiltViewModel
-class MapViewModel @Inject constructor (): BaseMviViewModel<MapIntent, MapViewState, MapEvent>() {
+class MapViewModel @Inject constructor() :
+    BaseMviViewModel<MapIntent, MapViewState, MapEvent>() {
 
     private val _viewState = MutableStateFlow(MapViewState())
     override val viewState: StateFlow<MapViewState> = _viewState.asStateFlow()
-
-    init {
-
-    }
 }

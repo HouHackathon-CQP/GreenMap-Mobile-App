@@ -1,6 +1,6 @@
 [versions]
 # --- Core & Build ---
-agp = "8.7.2"
+agp = "8.9.1"
 kotlin = "2.0.21"
 coreKtx = "1.15.0"
 appcompat = "1.7.0"
@@ -38,6 +38,8 @@ ksp = "2.0.21-1.0.28"
 timber = "5.0.1"
 coil = "2.7.0"
 lottie = "6.6.0"
+#--- Nav 3 ---
+nav3Core = "1.0.0"
 
 # --- Testing ---
 junit = "4.13.2"
@@ -94,6 +96,10 @@ lottie-compose = { module = "com.airbnb.android:lottie-compose", version.ref = "
 #---MapLibre---
 maplibre-android-sdk = { group = "org.maplibre.gl", name = "android-sdk", version.ref = "maplibre" }
 
+# ---Nav 3 ---
+androidx-navigation3-runtime = { module = "androidx.navigation3:navigation3-runtime", version.ref = "nav3Core" }
+androidx-navigation3-ui = { module = "androidx.navigation3:navigation3-ui", version.ref = "nav3Core" }
+
 # --- Testing ---
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
@@ -132,4 +138,9 @@ networking = [
 room = [
     "androidx-room-runtime",
     "androidx-room-ktx"
+]
+
+nav3 = [
+    "androidx-navigation3-runtime",
+    "androidx-navigation3-ui",
 ]
