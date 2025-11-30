@@ -23,8 +23,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.houhackathon.greenmap_app.R
 import com.houhackathon.greenmap_app.ui.components.GreenButton
 import com.houhackathon.greenmap_app.ui.components.GreenGhostButton
 
@@ -60,7 +62,7 @@ fun HomeScreen(
                 HeaderSection()
 
                 StatusCard(
-                    title = "Server",
+                    title = stringResource(id = R.string.server_title),
                     status = viewState.serverStatus,
                     isLoading = viewState.isServerLoading,
                     isError = viewState.isServerError,
@@ -69,7 +71,7 @@ fun HomeScreen(
                 )
 
                 StatusCard(
-                    title = "Database",
+                    title = stringResource(id = R.string.database_title),
                     status = viewState.databaseStatus,
                     isLoading = viewState.isDatabaseLoading,
                     isError = viewState.isDatabaseError,
@@ -84,12 +86,12 @@ fun HomeScreen(
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     GreenGhostButton(
-                        text = "Xem bản đồ",
+                        text = stringResource(id = R.string.btn_view_map),
                         modifier = Modifier.weight(1f),
                         onClick = onNavigateMap
                     )
                     GreenButton(
-                        text = "Làm mới",
+                        text = stringResource(id = R.string.btn_refresh),
                         modifier = Modifier.weight(1f),
                         onClick = {
                             onCheckServer()
@@ -109,11 +111,11 @@ private fun HeaderSection() {
         modifier = Modifier.fillMaxWidth()
     ) {
         Text(
-            text = "GreenMap",
+            text = stringResource(id = R.string.home_title),
             style = MaterialTheme.typography.headlineMedium.copy(color = Color.White, fontWeight = FontWeight.Bold)
         )
         Text(
-            text = "Kiểm tra kết nối hệ thống",
+            text = stringResource(id = R.string.home_subtitle),
             style = MaterialTheme.typography.bodyMedium.copy(color = Color.White.copy(alpha = 0.9f))
         )
     }
@@ -150,7 +152,7 @@ private fun StatusCard(
             }
 
             Text(
-                text = status ?: "Chưa kiểm tra",
+                text = status ?: stringResource(id = com.houhackathon.greenmap_app.R.string.status_not_checked),
                 style = MaterialTheme.typography.bodyMedium,
                 color = when {
                     isError -> MaterialTheme.colorScheme.error

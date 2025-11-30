@@ -2,10 +2,14 @@ package com.houhackathon.greenmap_app.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val Purple80 = Color(0xFFD0BCFF)
-val PurpleGrey80 = Color(0xFFCCC2DC)
-val Pink80 = Color(0xFFEFB8C8)
+// Green map palette
+val Leaf100 = Color(0xFFDFF6E3)
+val Leaf200 = Color(0xFFC4ECCE)
+val Leaf300 = Color(0xFF9BD7A0)
+val Leaf500 = Color(0xFF43A047)
+val Leaf700 = Color(0xFF2E7D32)
+val Leaf900 = Color(0xFF1B5E20)
 
-val Purple40 = Color(0xFF6650a4)
-val PurpleGrey40 = Color(0xFF625b71)
-val Pink40 = Color(0xFF7D5260)
+val SkyGlow = Color(0xFFB2E2E8)
+val Sand = Color(0xFFF2F7F2)
+val Charcoal = Color(0xFF203026)

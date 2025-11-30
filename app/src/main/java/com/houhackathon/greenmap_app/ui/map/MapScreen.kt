@@ -2,6 +2,8 @@ package com.houhackathon.greenmap_app.ui.map
 
 import android.Manifest
 import android.content.pm.PackageManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.CircularProgressIndicator
@@ -36,21 +38,46 @@ fun MapScreen(modifier: Modifier = Modifier) {
     val lifecycleOwner = LocalLifecycleOwner.current
     val mapView = remember { MapViewHolder.getOrCreate(context) }
     var isMapReady by remember { mutableStateOf(MapViewHolder.isInitialized()) }
+    var hasLocationPermission by remember { mutableStateOf(hasLocationPermission(context)) }
 
-    LaunchedEffect(mapView) {
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestMultiplePermissions()
+    ) { result ->
+        val granted = result[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
+            result[Manifest.permission.ACCESS_COARSE_LOCATION] == true
+        hasLocationPermission = granted
+        if (granted && MapViewHolder.isInitialized()) {
+            mapView.getMapAsync { enableMyLocation(it, mapView) }
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        if (!hasLocationPermission) {
+            permissionLauncher.launch(
+                arrayOf(
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                )
+            )
+        }
+    }
+
+    LaunchedEffect(mapView, hasLocationPermission) {
         if (!MapViewHolder.isInitialized()) {
             mapView.getMapAsync { map ->
-                setupMap(map, mapView)
+                setupMap(map, mapView, hasLocationPermission)
                 MapViewHolder.markInitialized()
                 isMapReady = true
             }
         } else {
+            if (hasLocationPermission) {
+                mapView.getMapAsync { enableMyLocation(it, mapView) }
+            }
             isMapReady = true
         }
     }
 
     DisposableEffect(lifecycleOwner, mapView) {
-        // khi màn Map được hiển thị lại sau khi đổi tab
         mapView.onStart()
         mapView.onResume()
 
@@ -60,7 +87,7 @@ fun MapScreen(modifier: Modifier = Modifier) {
                 Lifecycle.Event.ON_RESUME -> mapView.onResume()
                 Lifecycle.Event.ON_PAUSE -> mapView.onPause()
                 Lifecycle.Event.ON_STOP -> mapView.onStop()
-                Lifecycle.Event.ON_DESTROY -> MapViewHolder.destroy()
+                // Không destroy ở đây để giữ MapView khi đổi tab
                 else -> Unit
             }
         }
@@ -85,12 +112,14 @@ fun MapScreen(modifier: Modifier = Modifier) {
     }
 }
 
-private fun setupMap(map: MapLibreMap, mapView: MapView) {
+private fun setupMap(map: MapLibreMap, mapView: MapView, hasLocationPermission: Boolean) {
     val apiKey = BuildConfig.MAPTILER_API_KEY
     val styleUrl = buildStyleUrl(apiKey)
 
     map.setStyle(styleUrl) { _ ->
-        enableMyLocation(map, mapView)
+        if (hasLocationPermission) {
+            enableMyLocation(map, mapView)
+        }
     }
 
     val vietnamBounds = LatLngBounds.Builder()
@@ -115,11 +144,7 @@ private fun setupMap(map: MapLibreMap, mapView: MapView) {
 
 private fun enableMyLocation(map: MapLibreMap, mapView: MapView) {
     val context = mapView.context
-    val hasLocationPermission =
-        ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
-            ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
-
-    if (!hasLocationPermission) return
+    if (!hasLocationPermission(context)) return
 
     val style = map.style ?: return
     val activationOptions = LocationComponentActivationOptions.builder(context, style)
@@ -133,6 +158,10 @@ private fun enableMyLocation(map: MapLibreMap, mapView: MapView) {
         renderMode = RenderMode.COMPASS
     }
 }
+
+private fun hasLocationPermission(context: android.content.Context): Boolean =
+    ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
+        ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
 
 private const val MAPLIBRE_DEMO_STYLE = "https://demotiles.maplibre.org/style.json"
 

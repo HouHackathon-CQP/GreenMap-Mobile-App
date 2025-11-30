@@ -100,6 +100,9 @@ dependencies {
     // ---Nav 3 ---
     implementation(libs.bundles.nav3)
 
+    // DataStore
+    implementation(libs.androidx.datastore.preferences)
+
 
     // --- Utils ---
     implementation(libs.timber)

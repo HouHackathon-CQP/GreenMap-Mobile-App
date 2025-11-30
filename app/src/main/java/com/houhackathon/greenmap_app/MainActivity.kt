@@ -8,6 +8,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -23,6 +24,7 @@ import com.houhackathon.greenmap_app.navigation.Navigator
 import com.houhackathon.greenmap_app.navigation.featureASection
 import com.houhackathon.greenmap_app.navigation.featureBSection
 import com.houhackathon.greenmap_app.navigation.featureCSection
+import com.houhackathon.greenmap_app.navigation.profileSection
 import com.houhackathon.greenmap_app.navigation.rememberNavigationState
 import com.houhackathon.greenmap_app.navigation.toEntries
 import com.houhackathon.greenmap_app.ui.theme.setEdgeToEdgeConfig
@@ -46,12 +48,16 @@ data object RouteB1 : NavKey
 data object Notification : NavKey
 
 @Serializable
+data object Profile : NavKey
+
+@Serializable
 data object RouteC1 : NavKey
 
 private val TOP_LEVEL_ROUTES = mapOf<NavKey, NavBarItem>(
     Home to NavBarItem(icon = Icons.Default.Home, description = "Home"),
     Map to NavBarItem(icon = Icons.Default.LocationOn, description = "Map"),
     Notification to NavBarItem(icon = Icons.Default.Notifications, description = "Notifications"),
+    Profile to NavBarItem(icon = Icons.Default.Person, description = "Profile"),
 )
 
 data class NavBarItem(
@@ -81,6 +87,7 @@ class MainActivity : ComponentActivity() {
                 featureASection(onNavigateMap = { navigator.navigate(Map) })
                 featureBSection(onSubRouteClick = { navigator.navigate(RouteB1) })
                 featureCSection(onSubRouteClick = { navigator.navigate(RouteC1) })
+                profileSection(onLoginSuccess = { navigator.navigate(Home) })
             }
 
             Scaffold(bottomBar = {
