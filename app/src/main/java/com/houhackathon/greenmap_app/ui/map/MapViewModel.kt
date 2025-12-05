@@ -19,9 +19,12 @@ import android.content.Context
 import androidx.lifecycle.viewModelScope
 import com.houhackathon.greenmap_app.R
 import com.houhackathon.greenmap_app.core.mvi.BaseMviViewModel
+import com.houhackathon.greenmap_app.data.remote.dto.LocationDto
 import com.houhackathon.greenmap_app.domain.usecase.GetHanoiAqiUseCase
 import com.houhackathon.greenmap_app.domain.usecase.GetHanoiWeatherUseCase
+import com.houhackathon.greenmap_app.domain.usecase.GetLocationsUseCase
 import com.houhackathon.greenmap_app.extension.flow.Result
+import com.houhackathon.greenmap_app.domain.model.LocationType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
@@ -35,6 +38,7 @@ import kotlinx.coroutines.launch
 class MapViewModel @Inject constructor(
     private val getHanoiWeatherUseCase: GetHanoiWeatherUseCase,
     private val getHanoiAqiUseCase: GetHanoiAqiUseCase,
+    private val getLocationsUseCase: GetLocationsUseCase,
     @ApplicationContext private val appContext: Context,
 ) : BaseMviViewModel<MapIntent, MapViewState, MapEvent>() {
 
@@ -110,14 +114,54 @@ class MapViewModel @Inject constructor(
                 Result.Loading -> emptyList()
             }
 
+            val locationMarkers = mutableListOf<LocationPoiMarker>()
+            LocationType.values().forEach { type ->
+                when (val locationResult = getLocationsUseCase(type)) {
+                    is Result.Success -> {
+                        locationMarkers += locationResult.data.mapNotNull { dto ->
+                            dto.toMarker(type)
+                        }
+                    }
+                    is Result.Error -> {
+                        val message = locationResult.exception.message
+                            ?: appContext.getString(R.string.location_error_generic, type.displayName)
+                        sendEvent(MapEvent.ShowToast(message))
+                        errors.add(message)
+                    }
+                    Result.Loading -> Unit
+                }
+            }
+
             _viewState.update {
                 it.copy(
                     isLoading = false,
                     error = errors.firstOrNull(),
                     weatherStations = weatherMarkers,
-                    aqiStations = aqiMarkers
+                    aqiStations = aqiMarkers,
+                    poiStations = locationMarkers
                 )
             }
         }
     }
+}
+
+private fun LocationDto.toMarker(
+    fallbackType: LocationType
+): LocationPoiMarker? {
+    val coords = this.location?.coordinates
+    if (coords == null || coords.size < 2) return null
+    val lon = coords[0]
+    val lat = coords[1]
+    val resolvedType = LocationType.fromRaw(this.type) ?: fallbackType
+    val markerName = name ?: resolvedType.displayName
+    return LocationPoiMarker(
+        id = id ?: "${lat}_${lon}_${resolvedType.name}",
+        name = markerName,
+        type = resolvedType,
+        lat = lat,
+        lon = lon,
+        description = description,
+        dataSource = dataSource,
+        isEditable = isEditable
+    )
 }

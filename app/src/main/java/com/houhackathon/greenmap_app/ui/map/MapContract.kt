@@ -18,12 +18,14 @@ package com.houhackathon.greenmap_app.ui.map
 import com.houhackathon.greenmap_app.core.mvi.MviIntent
 import com.houhackathon.greenmap_app.core.mvi.MviSingleEvent
 import com.houhackathon.greenmap_app.core.mvi.MviViewState
+import com.houhackathon.greenmap_app.domain.model.LocationType
 
 data class MapViewState(
     val isLoading: Boolean = false,
     val error: String? = null,
     val weatherStations: List<WeatherStationMarker> = emptyList(),
     val aqiStations: List<AqiStationMarker> = emptyList(),
+    val poiStations: List<LocationPoiMarker> = emptyList(),
 ) : MviViewState
 
 data class WeatherStationMarker(
@@ -43,6 +45,17 @@ data class AqiStationMarker(
     val pm25: Double?,
     val aqi: Int?,
     val aqiCategory: VietnamAqiCategory?,
+)
+
+data class LocationPoiMarker(
+    val id: String,
+    val name: String,
+    val type: LocationType,
+    val lat: Double,
+    val lon: Double,
+    val description: String?,
+    val dataSource: String?,
+    val isEditable: Boolean?,
 )
 
 sealed class MapIntent : MviIntent {
