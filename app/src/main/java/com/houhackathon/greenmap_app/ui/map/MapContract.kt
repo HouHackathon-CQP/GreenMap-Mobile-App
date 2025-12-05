@@ -18,12 +18,51 @@ package com.houhackathon.greenmap_app.ui.map
 import com.houhackathon.greenmap_app.core.mvi.MviIntent
 import com.houhackathon.greenmap_app.core.mvi.MviSingleEvent
 import com.houhackathon.greenmap_app.core.mvi.MviViewState
+import com.houhackathon.greenmap_app.domain.model.LocationType
 
 data class MapViewState(
-    val ready: Boolean = false,
+    val isLoading: Boolean = false,
+    val error: String? = null,
+    val weatherStations: List<WeatherStationMarker> = emptyList(),
+    val aqiStations: List<AqiStationMarker> = emptyList(),
+    val poiStations: List<LocationPoiMarker> = emptyList(),
 ) : MviViewState
 
-sealed class MapIntent : MviIntent
+data class WeatherStationMarker(
+    val id: String,
+    val name: String,
+    val lat: Double,
+    val lon: Double,
+    val temperature: Double?,
+    val weatherType: String?,
+)
 
-sealed class MapEvent : MviSingleEvent
+data class AqiStationMarker(
+    val id: String,
+    val name: String,
+    val lat: Double,
+    val lon: Double,
+    val pm25: Double?,
+    val aqi: Int?,
+    val aqiCategory: VietnamAqiCategory?,
+)
 
+data class LocationPoiMarker(
+    val id: String,
+    val name: String,
+    val type: LocationType,
+    val lat: Double,
+    val lon: Double,
+    val description: String?,
+    val dataSource: String?,
+    val isEditable: Boolean?,
+)
+
+sealed class MapIntent : MviIntent {
+    data object LoadStations : MapIntent()
+    data object RefreshStations : MapIntent()
+}
+
+sealed class MapEvent : MviSingleEvent {
+    data class ShowToast(val message: String) : MapEvent()
+}

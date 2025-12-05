@@ -13,24 +13,16 @@
  * limitations under the License.
  */
 
-package com.houhackathon.greenmap_app.ui.theme
+package com.houhackathon.greenmap_app.domain.model
 
-import androidx.compose.ui.graphics.Color
+enum class LocationType(val queryName: String, val displayName: String) {
+    CHARGING_STATION("CHARGING_STATION", "Trạm sạc"),
+    PUBLIC_PARK("PUBLIC_PARK", "Công viên"),
+    BICYCLE_RENTAL("BICYCLE_RENTAL", "Thuê xe đạp"),
+    TOURIST_ATTRACTION("TOURIST_ATTRACTION", "Điểm tham quan");
 
-// Green map palette
-val Leaf100 = Color(0xFFDFF6E3)
-val Leaf200 = Color(0xFFC4ECCE)
-val Leaf300 = Color(0xFF9BD7A0)
-val Leaf500 = Color(0xFF43A047)
-val Leaf700 = Color(0xFF2E7D32)
-val Leaf900 = Color(0xFF1B5E20)
-
-val SkyGlow = Color(0xFFB2E2E8)
-val Sand = Color(0xFFF2F7F2)
-val Charcoal = Color(0xFF203026)
-
-// Map icon accents
-val ParkGreen = Color(0xFF2E7D32)
-val ChargeMint = Color(0xFF009688)
-val BikeAmber = Color(0xFFF9A825)
-val TourismCoral = Color(0xFFEF6C6C)
+    companion object {
+        fun fromRaw(raw: String?): LocationType? =
+            values().firstOrNull { it.queryName.equals(raw, ignoreCase = true) }
+    }
+}

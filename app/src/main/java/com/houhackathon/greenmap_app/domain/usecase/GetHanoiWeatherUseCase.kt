@@ -13,24 +13,13 @@
  * limitations under the License.
  */
 
-package com.houhackathon.greenmap_app.ui.theme
+package com.houhackathon.greenmap_app.domain.usecase
 
-import androidx.compose.ui.graphics.Color
+import com.houhackathon.greenmap_app.domain.repository.WeatherRepository
+import javax.inject.Inject
 
-// Green map palette
-val Leaf100 = Color(0xFFDFF6E3)
-val Leaf200 = Color(0xFFC4ECCE)
-val Leaf300 = Color(0xFF9BD7A0)
-val Leaf500 = Color(0xFF43A047)
-val Leaf700 = Color(0xFF2E7D32)
-val Leaf900 = Color(0xFF1B5E20)
-
-val SkyGlow = Color(0xFFB2E2E8)
-val Sand = Color(0xFFF2F7F2)
-val Charcoal = Color(0xFF203026)
-
-// Map icon accents
-val ParkGreen = Color(0xFF2E7D32)
-val ChargeMint = Color(0xFF009688)
-val BikeAmber = Color(0xFFF9A825)
-val TourismCoral = Color(0xFFEF6C6C)
+class GetHanoiWeatherUseCase @Inject constructor(
+    private val repository: WeatherRepository,
+) {
+    suspend operator fun invoke(limit: Int = 100) = repository.getHanoiWeather(limit)
+}
