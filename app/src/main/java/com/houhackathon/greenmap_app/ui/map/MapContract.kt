@@ -20,10 +20,25 @@ import com.houhackathon.greenmap_app.core.mvi.MviSingleEvent
 import com.houhackathon.greenmap_app.core.mvi.MviViewState
 
 data class MapViewState(
-    val ready: Boolean = false,
+    val isLoading: Boolean = false,
+    val error: String? = null,
+    val stations: List<WeatherStationMarker> = emptyList(),
 ) : MviViewState
 
-sealed class MapIntent : MviIntent
+data class WeatherStationMarker(
+    val id: String,
+    val name: String,
+    val lat: Double,
+    val lon: Double,
+    val temperature: Double?,
+    val weatherType: String?,
+)
 
-sealed class MapEvent : MviSingleEvent
+sealed class MapIntent : MviIntent {
+    data object LoadStations : MapIntent()
+    data object RefreshStations : MapIntent()
+}
 
+sealed class MapEvent : MviSingleEvent {
+    data class ShowToast(val message: String) : MapEvent()
+}

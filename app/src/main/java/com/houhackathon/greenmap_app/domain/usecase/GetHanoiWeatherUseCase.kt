@@ -13,13 +13,13 @@
  * limitations under the License.
  */
 
-package com.houhackathon.greenmap_app.domain.repository
+package com.houhackathon.greenmap_app.domain.usecase
 
-import com.houhackathon.greenmap_app.data.remote.dto.WeatherForecastResponse
-import com.houhackathon.greenmap_app.data.remote.dto.WeatherHanoiResponse
-import com.houhackathon.greenmap_app.extension.flow.Result
+import com.houhackathon.greenmap_app.domain.repository.WeatherRepository
+import javax.inject.Inject
 
-interface WeatherRepository {
-    suspend fun getForecast(lat: Double, lon: Double): Result<WeatherForecastResponse>
-    suspend fun getHanoiWeather(limit: Int = 100): Result<WeatherHanoiResponse>
+class GetHanoiWeatherUseCase @Inject constructor(
+    private val repository: WeatherRepository,
+) {
+    suspend operator fun invoke(limit: Int = 100) = repository.getHanoiWeather(limit)
 }

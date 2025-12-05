@@ -19,6 +19,7 @@ import com.houhackathon.greenmap_app.data.remote.dto.ApiStatusResponse
 import com.houhackathon.greenmap_app.data.remote.dto.LoginRequest
 import com.houhackathon.greenmap_app.data.remote.dto.LoginResponse
 import com.houhackathon.greenmap_app.data.remote.dto.WeatherForecastResponse
+import com.houhackathon.greenmap_app.data.remote.dto.WeatherHanoiResponse
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -40,4 +41,9 @@ interface ApiService {
         @Query("lat") lat: Double,
         @Query("lon") lon: Double,
     ): Response<WeatherForecastResponse>
+
+    @GET("weather/hanoi")
+    suspend fun getHanoiWeather(
+        @Query("limit") limit: Int = 100,
+    ): Response<WeatherHanoiResponse>
 }

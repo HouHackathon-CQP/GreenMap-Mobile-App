@@ -19,13 +19,18 @@ import android.Manifest
 import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -37,6 +42,9 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.unit.dp
 import com.houhackathon.greenmap_app.BuildConfig
 import org.maplibre.android.camera.CameraPosition
 import org.maplibre.android.geometry.LatLng
@@ -44,16 +52,22 @@ import org.maplibre.android.geometry.LatLngBounds
 import org.maplibre.android.location.LocationComponentActivationOptions
 import org.maplibre.android.location.modes.CameraMode
 import org.maplibre.android.location.modes.RenderMode
+import org.maplibre.android.annotations.Marker
+import org.maplibre.android.annotations.MarkerOptions
 import org.maplibre.android.maps.MapLibreMap
 import org.maplibre.android.maps.MapView
 
 @Composable
 fun MapScreen(modifier: Modifier = Modifier) {
+    val viewModel: MapViewModel = hiltViewModel()
+    val viewState by viewModel.viewState.collectAsState()
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val mapView = remember { MapViewHolder.getOrCreate(context) }
     var isMapReady by remember { mutableStateOf(MapViewHolder.isInitialized()) }
     var hasLocationPermission by remember { mutableStateOf(hasLocationPermission(context)) }
+    var mapLibreMap by remember { mutableStateOf<MapLibreMap?>(null) }
+    val markers = remember { mutableStateListOf<Marker>() }
 
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions()
@@ -80,7 +94,9 @@ fun MapScreen(modifier: Modifier = Modifier) {
     LaunchedEffect(mapView, hasLocationPermission) {
         if (!MapViewHolder.isInitialized()) {
             mapView.getMapAsync { map ->
-                setupMap(map, mapView, hasLocationPermission)
+                setupMap(map, mapView, hasLocationPermission) {
+                    mapLibreMap = map
+                }
                 MapViewHolder.markInitialized()
                 isMapReady = true
             }
@@ -88,7 +104,29 @@ fun MapScreen(modifier: Modifier = Modifier) {
             if (hasLocationPermission) {
                 mapView.getMapAsync { enableMyLocation(it, mapView) }
             }
+            mapView.getMapAsync { mapLibreMap = it }
             isMapReady = true
+        }
+    }
+
+    LaunchedEffect(viewState.stations, mapLibreMap) {
+        val map = mapLibreMap ?: return@LaunchedEffect
+        // clear previous markers
+        markers.forEach { map.removeAnnotation(it) }
+        markers.clear()
+        viewState.stations.forEach { station ->
+            val marker = map.addMarker(
+                MarkerOptions()
+                    .position(LatLng(station.lat, station.lon))
+                    .title(station.name)
+                    .snippet(
+                        listOfNotNull(
+                            station.weatherType,
+                            station.temperature?.let { "${"%.1f".format(it)}°C" }
+                        ).joinToString(" • ")
+                    )
+            )
+            markers.add(marker)
         }
     }
 
@@ -124,10 +162,27 @@ fun MapScreen(modifier: Modifier = Modifier) {
         if (!isMapReady) {
             CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
         }
+
+        if (!viewState.error.isNullOrBlank()) {
+            Text(
+                text = viewState.error ?: "",
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .background(MaterialTheme.colorScheme.error.copy(alpha = 0.1f))
+                    .padding(8.dp),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onErrorContainer
+            )
+        }
     }
 }
 
-private fun setupMap(map: MapLibreMap, mapView: MapView, hasLocationPermission: Boolean) {
+private fun setupMap(
+    map: MapLibreMap,
+    mapView: MapView,
+    hasLocationPermission: Boolean,
+    onStyleReady: () -> Unit = {}
+) {
     val apiKey = BuildConfig.MAPTILER_API_KEY
     val styleUrl = buildStyleUrl(apiKey)
 
@@ -135,6 +190,7 @@ private fun setupMap(map: MapLibreMap, mapView: MapView, hasLocationPermission: 
         if (hasLocationPermission) {
             enableMyLocation(map, mapView)
         }
+        onStyleReady()
     }
 
     val vietnamBounds = LatLngBounds.Builder()
