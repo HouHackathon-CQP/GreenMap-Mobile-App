@@ -46,5 +46,6 @@
     <string name="weather_location_unavailable">Không lấy được vị trí, vui lòng thử lại</string>
     <string name="btn_request_location">Cấp quyền vị trí</string>
     <string name="location_error_generic">Không lấy được dữ liệu %1$s, thử lại sau</string>
+    <string name="news_error_generic">Không tải được tin tức, thử lại sau</string>
 
 </resources>

@@ -45,4 +45,7 @@ class RemoteDataSource @Inject constructor(
 
     suspend fun getLocations(locationType: String, limit: Int, skip: Int) =
         safeApiCall { apiService.getLocations(locationType, limit, skip) }
+
+    suspend fun getHanoimoiNews(limit: Int) =
+        safeApiCall { apiService.getHanoimoiNews(limit) }
 }

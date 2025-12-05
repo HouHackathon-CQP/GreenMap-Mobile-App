@@ -36,6 +36,7 @@ import com.houhackathon.greenmap_app.ui.home.HomeIntent
 import com.houhackathon.greenmap_app.ui.home.HomeScreen
 import com.houhackathon.greenmap_app.ui.home.HomeViewModel
 import com.houhackathon.greenmap_app.ui.map.MapScreen
+import com.houhackathon.greenmap_app.ui.notification.NotificationScreen
 
 
 fun EntryProviderScope<NavKey>.featureASection(
@@ -81,7 +82,7 @@ fun EntryProviderScope<NavKey>.featureCSection(
     onSubRouteClick: () -> Unit,
 ) {
     entry<com.houhackathon.greenmap_app.Notification> {
-
+        NotificationScreen()
     }
 }
 
