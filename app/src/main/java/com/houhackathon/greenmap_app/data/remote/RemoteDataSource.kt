@@ -39,4 +39,7 @@ class RemoteDataSource @Inject constructor(
 
     suspend fun getHanoiWeather(limit: Int) =
         safeApiCall { apiService.getHanoiWeather(limit) }
+
+    suspend fun getHanoiAqi(limit: Int) =
+        safeApiCall { apiService.getHanoiAqi(limit) }
 }

@@ -18,6 +18,7 @@ package com.houhackathon.greenmap_app.data.repository
 import com.houhackathon.greenmap_app.data.remote.RemoteDataSource
 import com.houhackathon.greenmap_app.data.remote.dto.WeatherForecastResponse
 import com.houhackathon.greenmap_app.data.remote.dto.WeatherHanoiResponse
+import com.houhackathon.greenmap_app.data.remote.dto.AqiHanoiResponse
 import com.houhackathon.greenmap_app.domain.repository.WeatherRepository
 import com.houhackathon.greenmap_app.extension.flow.Result
 import javax.inject.Inject
@@ -33,5 +34,9 @@ class WeatherRepositoryImpl @Inject constructor(
 
     override suspend fun getHanoiWeather(limit: Int): Result<WeatherHanoiResponse> {
         return remoteDataSource.getHanoiWeather(limit)
+    }
+
+    override suspend fun getHanoiAqi(limit: Int): Result<AqiHanoiResponse> {
+        return remoteDataSource.getHanoiAqi(limit)
     }
 }

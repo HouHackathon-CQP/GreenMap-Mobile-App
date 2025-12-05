@@ -22,7 +22,8 @@ import com.houhackathon.greenmap_app.core.mvi.MviViewState
 data class MapViewState(
     val isLoading: Boolean = false,
     val error: String? = null,
-    val stations: List<WeatherStationMarker> = emptyList(),
+    val weatherStations: List<WeatherStationMarker> = emptyList(),
+    val aqiStations: List<AqiStationMarker> = emptyList(),
 ) : MviViewState
 
 data class WeatherStationMarker(
@@ -32,6 +33,16 @@ data class WeatherStationMarker(
     val lon: Double,
     val temperature: Double?,
     val weatherType: String?,
+)
+
+data class AqiStationMarker(
+    val id: String,
+    val name: String,
+    val lat: Double,
+    val lon: Double,
+    val pm25: Double?,
+    val aqi: Int?,
+    val aqiCategory: VietnamAqiCategory?,
 )
 
 sealed class MapIntent : MviIntent {

@@ -17,9 +17,11 @@ package com.houhackathon.greenmap_app.domain.repository
 
 import com.houhackathon.greenmap_app.data.remote.dto.WeatherForecastResponse
 import com.houhackathon.greenmap_app.data.remote.dto.WeatherHanoiResponse
+import com.houhackathon.greenmap_app.data.remote.dto.AqiHanoiResponse
 import com.houhackathon.greenmap_app.extension.flow.Result
 
 interface WeatherRepository {
     suspend fun getForecast(lat: Double, lon: Double): Result<WeatherForecastResponse>
     suspend fun getHanoiWeather(limit: Int = 100): Result<WeatherHanoiResponse>
+    suspend fun getHanoiAqi(limit: Int = 100): Result<AqiHanoiResponse>
 }

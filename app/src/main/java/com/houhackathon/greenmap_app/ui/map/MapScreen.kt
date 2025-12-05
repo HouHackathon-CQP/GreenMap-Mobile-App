@@ -17,6 +17,7 @@ package com.houhackathon.greenmap_app.ui.map
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -29,6 +30,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -38,49 +40,136 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.compose.runtime.collectAsState
-import androidx.compose.ui.unit.dp
 import com.houhackathon.greenmap_app.BuildConfig
+import com.houhackathon.greenmap_app.R
+import com.houhackathon.greenmap_app.ui.theme.Leaf700
+import org.maplibre.android.annotations.Icon
+import org.maplibre.android.annotations.Marker
+import org.maplibre.android.annotations.MarkerOptions
 import org.maplibre.android.camera.CameraPosition
 import org.maplibre.android.geometry.LatLng
 import org.maplibre.android.geometry.LatLngBounds
 import org.maplibre.android.location.LocationComponentActivationOptions
 import org.maplibre.android.location.modes.CameraMode
 import org.maplibre.android.location.modes.RenderMode
-import org.maplibre.android.annotations.Marker
-import org.maplibre.android.annotations.MarkerOptions
 import org.maplibre.android.maps.MapLibreMap
 import org.maplibre.android.maps.MapView
+import toMapLibreIcon
 
 @Composable
 fun MapScreen(modifier: Modifier = Modifier) {
     val viewModel: MapViewModel = hiltViewModel()
     val viewState by viewModel.viewState.collectAsState()
     val context = LocalContext.current
-    val lifecycleOwner = LocalLifecycleOwner.current
     val mapView = remember { MapViewHolder.getOrCreate(context) }
     var isMapReady by remember { mutableStateOf(MapViewHolder.isInitialized()) }
     var hasLocationPermission by remember { mutableStateOf(hasLocationPermission(context)) }
     var mapLibreMap by remember { mutableStateOf<MapLibreMap?>(null) }
-    val markers = remember { mutableStateListOf<Marker>() }
+    val weatherMarkers = remember { mutableStateListOf<Marker>() }
+    val aqiMarkers = remember { mutableStateListOf<Marker>() }
+    val aqiIcon = context.toMapLibreIcon(R.drawable.ic_aqi, Leaf700)
 
+    MapEventHandler(viewModel)
+    LocationPermissionEffect(
+        hasLocationPermission = hasLocationPermission,
+        mapView = mapView,
+        onPermissionChanged = { hasLocationPermission = it }
+    )
+    MapInitializer(
+        mapView = mapView,
+        hasLocationPermission = hasLocationPermission,
+        onMapReady = { mapLibreMap = it },
+        onMapPrepared = { isMapReady = true }
+    )
+    WeatherMarkersEffect(
+        weatherStations = viewState.weatherStations,
+        mapLibreMap = mapLibreMap,
+        markers = weatherMarkers
+    )
+    AqiMarkersEffect(
+        aqiStations = viewState.aqiStations,
+        mapLibreMap = mapLibreMap,
+        markers = aqiMarkers,
+        aqiIcon = aqiIcon
+    )
+    MapLifecycleHandler(mapView)
+    MapContent(
+        modifier = modifier,
+        mapView = mapView,
+        isMapReady = isMapReady,
+        errorMessage = viewState.error
+    )
+}
+
+@Composable
+private fun MapContent(
+    modifier: Modifier,
+    mapView: MapView,
+    isMapReady: Boolean,
+    errorMessage: String?
+) {
+    Box(modifier = modifier.fillMaxSize()) {
+        AndroidView(
+            modifier = Modifier.fillMaxSize(),
+            factory = { mapView },
+            update = { /* giữ nguyên để tránh recreate khi recompose */ }
+        )
+
+        if (!isMapReady) {
+            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+        }
+
+        if (!errorMessage.isNullOrBlank()) {
+            Text(
+                text = errorMessage,
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .background(MaterialTheme.colorScheme.error.copy(alpha = 0.1f))
+                    .padding(8.dp),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onErrorContainer
+            )
+        }
+    }
+}
+
+@Composable
+private fun MapEventHandler(viewModel: MapViewModel) {
+    val context = LocalContext.current
+    LaunchedEffect(Unit) {
+        viewModel.singleEvent.collect { event ->
+            when (event) {
+                is MapEvent.ShowToast -> Toast.makeText(context, event.message, Toast.LENGTH_SHORT)
+                    .show()
+            }
+        }
+    }
+}
+
+@Composable
+private fun LocationPermissionEffect(
+    hasLocationPermission: Boolean,
+    mapView: MapView,
+    onPermissionChanged: (Boolean) -> Unit
+) {
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions()
     ) { result ->
         val granted = result[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
-            result[Manifest.permission.ACCESS_COARSE_LOCATION] == true
-        hasLocationPermission = granted
+                result[Manifest.permission.ACCESS_COARSE_LOCATION] == true
+        onPermissionChanged(granted)
         if (granted && MapViewHolder.isInitialized()) {
             mapView.getMapAsync { enableMyLocation(it, mapView) }
         }
     }
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(hasLocationPermission) {
         if (!hasLocationPermission) {
             permissionLauncher.launch(
                 arrayOf(
@@ -90,31 +179,45 @@ fun MapScreen(modifier: Modifier = Modifier) {
             )
         }
     }
+}
 
+@Composable
+private fun MapInitializer(
+    mapView: MapView,
+    hasLocationPermission: Boolean,
+    onMapReady: (MapLibreMap) -> Unit,
+    onMapPrepared: () -> Unit
+) {
     LaunchedEffect(mapView, hasLocationPermission) {
         if (!MapViewHolder.isInitialized()) {
             mapView.getMapAsync { map ->
                 setupMap(map, mapView, hasLocationPermission) {
-                    mapLibreMap = map
+                    onMapReady(map)
                 }
                 MapViewHolder.markInitialized()
-                isMapReady = true
+                onMapPrepared()
             }
         } else {
             if (hasLocationPermission) {
                 mapView.getMapAsync { enableMyLocation(it, mapView) }
             }
-            mapView.getMapAsync { mapLibreMap = it }
-            isMapReady = true
+            mapView.getMapAsync { onMapReady(it) }
+            onMapPrepared()
         }
     }
+}
 
-    LaunchedEffect(viewState.stations, mapLibreMap) {
+@Composable
+private fun WeatherMarkersEffect(
+    weatherStations: List<WeatherStationMarker>,
+    mapLibreMap: MapLibreMap?,
+    markers: MutableList<Marker>
+) {
+    LaunchedEffect(weatherStations, mapLibreMap) {
         val map = mapLibreMap ?: return@LaunchedEffect
-        // clear previous markers
         markers.forEach { map.removeAnnotation(it) }
         markers.clear()
-        viewState.stations.forEach { station ->
+        weatherStations.forEach { station ->
             val marker = map.addMarker(
                 MarkerOptions()
                     .position(LatLng(station.lat, station.lon))
@@ -129,7 +232,35 @@ fun MapScreen(modifier: Modifier = Modifier) {
             markers.add(marker)
         }
     }
+}
 
+@Composable
+private fun AqiMarkersEffect(
+    aqiStations: List<AqiStationMarker>,
+    mapLibreMap: MapLibreMap?,
+    markers: MutableList<Marker>,
+    aqiIcon: Icon?
+) {
+    LaunchedEffect(aqiStations, mapLibreMap) {
+        val map = mapLibreMap ?: return@LaunchedEffect
+        markers.forEach { map.removeAnnotation(it) }
+        markers.clear()
+        aqiStations.forEach { station ->
+            val marker = map.addMarker(
+                MarkerOptions()
+                    .position(LatLng(station.lat, station.lon))
+                    .title(station.name)
+                    .snippet(buildAqiSnippet(station))
+                    .icon(aqiIcon)
+            )
+            markers.add(marker)
+        }
+    }
+}
+
+@Composable
+private fun MapLifecycleHandler(mapView: MapView) {
+    val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner, mapView) {
         mapView.onStart()
         mapView.onResume()
@@ -151,30 +282,14 @@ fun MapScreen(modifier: Modifier = Modifier) {
             mapView.onStop()
         }
     }
+}
 
-    Box(modifier = modifier.fillMaxSize()) {
-        AndroidView(
-            modifier = Modifier.fillMaxSize(),
-            factory = { mapView },
-            update = { /* giữ nguyên để tránh recreate khi recompose */ }
-        )
-
-        if (!isMapReady) {
-            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-        }
-
-        if (!viewState.error.isNullOrBlank()) {
-            Text(
-                text = viewState.error ?: "",
-                modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .background(MaterialTheme.colorScheme.error.copy(alpha = 0.1f))
-                    .padding(8.dp),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onErrorContainer
-            )
-        }
-    }
+private fun buildAqiSnippet(station: AqiStationMarker): String {
+    val parts = listOfNotNull(
+        station.aqi?.let { "AQI: $it" },
+        station.aqiCategory?.label?.let { "Mức độ: $it" },
+    )
+    return parts.takeIf { it.isNotEmpty() }?.joinToString(" • ") ?: "AQI Station"
 }
 
 private fun setupMap(
@@ -231,8 +346,14 @@ private fun enableMyLocation(map: MapLibreMap, mapView: MapView) {
 }
 
 private fun hasLocationPermission(context: android.content.Context): Boolean =
-    ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
-        ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
+    ContextCompat.checkSelfPermission(
+        context,
+        Manifest.permission.ACCESS_FINE_LOCATION
+    ) == PackageManager.PERMISSION_GRANTED ||
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
 
 private const val MAPLIBRE_DEMO_STYLE = "https://demotiles.maplibre.org/style.json"
 
