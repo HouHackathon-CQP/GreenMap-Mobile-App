@@ -24,7 +24,26 @@
     <string name="toast_login_fail">Đăng nhập thất bại</string>
     <string name="status_server_ok">Server OK</string>
     <string name="status_db_ok">Database OK</string>
-    <string name="home_title">GreenMap</string>
-    <string name="home_subtitle">Kiểm tra kết nối hệ thống</string>
+    <string name="home_title">GreenMap Weather</string>
+    <string name="home_weather_subtitle">Dự báo thời tiết theo tọa độ</string>
+    <string name="weather_location_title">Chọn vị trí</string>
+    <string name="label_lat">Vĩ độ</string>
+    <string name="label_lon">Kinh độ</string>
+    <string name="btn_get_forecast">Xem dự báo</string>
+    <string name="btn_use_location">Lấy vị trí hiện tại</string>
+    <string name="btn_open_map">Mở bản đồ</string>
+    <string name="weather_current">Hiện tại</string>
+    <string name="weather_hourly">Trong 24h tới</string>
+    <string name="weather_daily">7 ngày tới</string>
+    <string name="weather_placeholder_desc">Đang sẵn sàng...</string>
+    <string name="weather_empty_hourly">Chưa có dữ liệu giờ</string>
+    <string name="weather_empty_daily">Chưa có dữ liệu ngày</string>
+    <string name="weather_humidity">Độ ẩm</string>
+    <string name="weather_wind">Gió</string>
+    <string name="weather_invalid_location">Vĩ độ/Kinh độ không hợp lệ</string>
+    <string name="weather_error_generic">Không lấy được dự báo, thử lại sau</string>
+    <string name="weather_no_location">Chưa có vị trí hiện tại</string>
+    <string name="weather_location_unavailable">Không lấy được vị trí, vui lòng thử lại</string>
+    <string name="btn_request_location">Cấp quyền vị trí</string>
 
 </resources>

@@ -13,21 +13,11 @@
  * limitations under the License.
  */
 
-package com.houhackathon.greenmap_app.data.remote.dto
+package com.houhackathon.greenmap_app.domain.repository
 
-import com.google.gson.annotations.SerializedName
+import com.houhackathon.greenmap_app.data.remote.dto.WeatherForecastResponse
+import com.houhackathon.greenmap_app.extension.flow.Result
 
-data class LoginResponse(
-    @SerializedName("access_token")
-    val token: String? = null,
-    @SerializedName("token_type")
-    val bearer: String? = null,
-    @SerializedName("id")
-    val id: Int? = null,
-    @SerializedName("email")
-    val email: String? = null,
-    @SerializedName("full_name")
-    val fullName: String? = null,
-    @SerializedName("role")
-    val role: String? = null
-)
+interface WeatherRepository {
+    suspend fun getForecast(lat: Double, lon: Double): Result<WeatherForecastResponse>
+}

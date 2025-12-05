@@ -15,11 +15,14 @@
 
 package com.houhackathon.greenmap_app.ui.home
 
+import android.content.Context
 import androidx.lifecycle.viewModelScope
+import com.houhackathon.greenmap_app.R
 import com.houhackathon.greenmap_app.core.mvi.BaseMviViewModel
-import com.houhackathon.greenmap_app.domain.usecase.CheckDatabaseStatusUseCase
-import com.houhackathon.greenmap_app.domain.usecase.GetHealthStatusUseCase
+import com.houhackathon.greenmap_app.core.location.LocationProvider
+import com.houhackathon.greenmap_app.domain.usecase.GetWeatherForecastUseCase
 import com.houhackathon.greenmap_app.extension.flow.Result
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -30,8 +33,9 @@ import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val getHealthStatusUseCase: GetHealthStatusUseCase,
-    private val checkDatabaseStatusUseCase: CheckDatabaseStatusUseCase,
+    private val getWeatherForecastUseCase: GetWeatherForecastUseCase,
+    private val locationProvider: LocationProvider,
+    @ApplicationContext private val appContext: Context,
 ) : BaseMviViewModel<HomeIntent, HomeViewState, HomeEvent>() {
 
     private val _viewState = MutableStateFlow(HomeViewState())
@@ -41,86 +45,81 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             intentSharedFlow.collect(::handleIntent)
         }
-        processIntent(HomeIntent.CheckServer)
-        processIntent(HomeIntent.CheckDatabase)
     }
 
     private fun handleIntent(intent: HomeIntent) {
         when (intent) {
-            HomeIntent.CheckServer -> checkServer()
-            HomeIntent.CheckDatabase -> checkDatabase()
+            HomeIntent.UseCurrentLocation -> fetchCurrentLocation()
+            HomeIntent.LoadForecast, HomeIntent.RefreshForecast -> loadForecast()
             HomeIntent.NavigateToMap -> sendEvent(HomeEvent.NavigateMap)
         }
     }
 
-    private fun checkServer() {
+    private fun fetchCurrentLocation() {
         viewModelScope.launch {
-            _viewState.update {
-                it.copy(
-                    isServerLoading = true,
-                    isServerError = false,
-                    serverStatus = null
-                )
-            }
-            when (val result = getHealthStatusUseCase()) {
+            _viewState.update { it.copy(isLoading = true, error = null) }
+            when (val result = locationProvider.getCurrentLocation()) {
                 is Result.Success -> {
-                    val message = result.data.message ?: result.data.status ?: "Server OK"
+                    val (lat, lon) = result.data
                     _viewState.update {
                         it.copy(
-                            isServerLoading = false,
-                            isServerError = false,
-                            serverStatus = message
+                            lat = lat.toString(),
+                            lon = lon.toString()
                         )
                     }
+                    loadForecast(latOverride = lat, lonOverride = lon)
                 }
-
                 is Result.Error -> {
-                    _viewState.update {
-                        it.copy(
-                            isServerLoading = false,
-                            isServerError = true,
-                            serverStatus = result.exception.message ?: "Server error"
-                        )
-                    }
+                    val message = result.exception.message ?: appContext.getString(R.string.weather_location_unavailable)
+                    _viewState.update { it.copy(isLoading = false, error = message) }
+                    sendEvent(HomeEvent.ShowToast(message))
                 }
-
-                Result.Loading -> _viewState.update { it.copy(isServerLoading = true) }
+                Result.Loading -> _viewState.update { it.copy(isLoading = true) }
             }
         }
     }
 
-    private fun checkDatabase() {
+    private fun loadForecast(latOverride: Double? = null, lonOverride: Double? = null) {
+        val lat = latOverride ?: _viewState.value.lat.toDoubleOrNull()
+        val lon = lonOverride ?: _viewState.value.lon.toDoubleOrNull()
+
+        if (lat == null || lon == null) {
+            val message = appContext.getString(R.string.weather_no_location)
+            _viewState.update { it.copy(error = message) }
+            sendEvent(HomeEvent.ShowToast(message))
+            return
+        }
+
         viewModelScope.launch {
             _viewState.update {
                 it.copy(
-                    isDatabaseLoading = true,
-                    isDatabaseError = false,
-                    databaseStatus = null
+                    isLoading = true,
+                    error = null
                 )
             }
-            when (val result = checkDatabaseStatusUseCase()) {
-                is Result.Success -> {
-                    val message = result.data.message ?: result.data.status ?: "Database OK"
-                    _viewState.update {
-                        it.copy(
-                            isDatabaseLoading = false,
-                            isDatabaseError = false,
-                            databaseStatus = message
-                        )
-                    }
+            when (val result = getWeatherForecastUseCase(lat, lon)) {
+                is Result.Success -> _viewState.update {
+                    it.copy(
+                        isLoading = false,
+                        error = null,
+                        forecast = result.data
+                    )
                 }
-
                 is Result.Error -> {
                     _viewState.update {
                         it.copy(
-                            isDatabaseLoading = false,
-                            isDatabaseError = true,
-                            databaseStatus = result.exception.message ?: "Database error"
+                            isLoading = false,
+                            error = result.exception.message ?: appContext.getString(R.string.weather_error_generic),
+                            forecast = null
                         )
                     }
+                    sendEvent(
+                        HomeEvent.ShowToast(
+                            result.exception.message ?: appContext.getString(R.string.weather_error_generic)
+                        )
+                    )
                 }
-
-                Result.Loading -> _viewState.update { it.copy(isDatabaseLoading = true) }
+                Result.Loading -> _viewState.update { it.copy(isLoading = true) }
             }
         }
     }

@@ -33,4 +33,7 @@ class RemoteDataSource @Inject constructor(
 
     suspend fun login(username: String, password: String) =
         safeApiCall { apiService.login(LoginRequest(username, password)) }
+
+    suspend fun getWeatherForecast(lat: Double, lon: Double) =
+        safeApiCall { apiService.getWeatherForecast(lat, lon) }
 }

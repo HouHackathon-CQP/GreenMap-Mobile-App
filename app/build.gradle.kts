@@ -121,6 +121,7 @@ dependencies {
 
     // --- Utils ---
     implementation(libs.timber)
+    implementation(libs.play.services.location)
 
     // --- Testing ---
     testImplementation(libs.junit)

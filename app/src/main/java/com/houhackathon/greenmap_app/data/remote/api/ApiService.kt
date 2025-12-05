@@ -18,10 +18,12 @@ package com.houhackathon.greenmap_app.data.remote.api
 import com.houhackathon.greenmap_app.data.remote.dto.ApiStatusResponse
 import com.houhackathon.greenmap_app.data.remote.dto.LoginRequest
 import com.houhackathon.greenmap_app.data.remote.dto.LoginResponse
+import com.houhackathon.greenmap_app.data.remote.dto.WeatherForecastResponse
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.Query
 
 interface ApiService {
     @GET("/")
@@ -32,4 +34,10 @@ interface ApiService {
 
     @POST("login")
     suspend fun login(@Body body: LoginRequest): Response<LoginResponse>
+
+    @GET("weather/forecast")
+    suspend fun getWeatherForecast(
+        @Query("lat") lat: Double,
+        @Query("lon") lon: Double,
+    ): Response<WeatherForecastResponse>
 }
