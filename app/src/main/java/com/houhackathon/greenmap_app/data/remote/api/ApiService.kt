@@ -21,6 +21,7 @@ import com.houhackathon.greenmap_app.data.remote.dto.LoginResponse
 import com.houhackathon.greenmap_app.data.remote.dto.WeatherForecastResponse
 import com.houhackathon.greenmap_app.data.remote.dto.WeatherHanoiResponse
 import com.houhackathon.greenmap_app.data.remote.dto.AqiHanoiResponse
+import com.houhackathon.greenmap_app.data.remote.dto.AiWeatherInsightResponse
 import com.houhackathon.greenmap_app.data.remote.dto.LocationDto
 import com.houhackathon.greenmap_app.data.remote.dto.NewsDto
 import retrofit2.Response
@@ -68,4 +69,11 @@ interface ApiService {
     suspend fun getHanoimoiNews(
         @Query("limit") limit: Int = 50,
     ): Response<List<NewsDto>>
+
+    @POST("ai/weather-insights")
+    suspend fun getAiWeatherInsights(
+        @Query("provider") provider: String,
+        @Query("lat") lat: Double? = null,
+        @Query("lon") lon: Double? = null,
+    ): Response<AiWeatherInsightResponse>
 }
