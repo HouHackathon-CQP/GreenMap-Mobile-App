@@ -28,6 +28,13 @@ data class MapViewState(
     val poiStations: List<LocationPoiMarker> = emptyList(),
 ) : MviViewState
 
+data class MarkerInfo(
+    val title: String,
+    val subtitle: String? = null,
+    val description: String? = null,
+    val category: String? = null,
+)
+
 data class WeatherStationMarker(
     val id: String,
     val name: String,

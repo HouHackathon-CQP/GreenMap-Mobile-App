@@ -15,6 +15,7 @@
 
 package com.houhackathon.greenmap_app.ui.auth
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -38,11 +39,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.houhackathon.greenmap_app.R
 import com.houhackathon.greenmap_app.ui.components.GreenButton
+import com.houhackathon.greenmap_app.ui.theme.Leaf300
 import com.houhackathon.greenmap_app.ui.theme.Leaf200
 import com.houhackathon.greenmap_app.ui.theme.Leaf500
 import com.houhackathon.greenmap_app.ui.theme.Leaf700
@@ -60,34 +63,32 @@ fun ProfileScreen(
             .fillMaxSize()
             .background(
                 brush = Brush.verticalGradient(
-                    listOf(Leaf700, Leaf500, Leaf200)
+                    listOf(Color(0xFF0E402E), Color(0xFF0F9D58), Leaf300)
                 )
             )
             .padding(20.dp)
     ) {
-        Surface(
-            shape = CircleShape,
-            color = Color.White.copy(alpha = 0.15f),
-            modifier = Modifier
-                .size(220.dp)
-                .align(Alignment.TopEnd)
-        ) {}
-
         Column(
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            Image(
+                painter = painterResource(id = R.drawable.logo),
+                contentDescription = null,
+                modifier = Modifier.size(72.dp)
+            )
+            Spacer(modifier = Modifier.height(12.dp))
             Box(
                 modifier = Modifier
                     .clip(CircleShape)
-                    .background(Color.White.copy(alpha = 0.9f))
+                    .background(Color.White.copy(alpha = 0.12f))
                     .padding(20.dp)
             ) {
                 Icon(
                     imageVector = Icons.Outlined.Person,
                     contentDescription = null,
-                    tint = Leaf700,
+                    tint = Sand,
                     modifier = Modifier
                         .size(48.dp)
                         .align(Alignment.Center)
@@ -97,7 +98,7 @@ fun ProfileScreen(
             Text(
                 text = fullName ?: stringResource(id = R.string.title_profile),
                 style = MaterialTheme.typography.titleMedium.copy(
-                    color = Sand,
+                    color = Color.White,
                     fontWeight = FontWeight.Bold
                 )
             )
