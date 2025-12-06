@@ -30,6 +30,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -81,10 +82,7 @@ fun MapFilterBar(
     val scrollState = rememberScrollState()
     Row(
         modifier = modifier
-            .padding(12.dp)
-            .horizontalScroll(scrollState)
-            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f))
-            .padding(horizontal = 8.dp, vertical = 6.dp),
+            .horizontalScroll(scrollState),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -95,8 +93,8 @@ fun MapFilterBar(
                 onClick = { onToggle(layer) },
                 label = { Text(layer.label) },
                 colors = FilterChipDefaults.filterChipColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    selectedContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.9f),
+                    containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.85f),
+                    selectedContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f),
                     labelColor = MaterialTheme.colorScheme.onSurface,
                     selectedLabelColor = MaterialTheme.colorScheme.onPrimary
                 )

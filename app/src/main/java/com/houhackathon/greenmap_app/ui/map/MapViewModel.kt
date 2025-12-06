@@ -19,7 +19,9 @@ import android.content.Context
 import androidx.lifecycle.viewModelScope
 import com.houhackathon.greenmap_app.R
 import com.houhackathon.greenmap_app.core.mvi.BaseMviViewModel
+import com.houhackathon.greenmap_app.data.remote.dto.AqiHanoiResponse
 import com.houhackathon.greenmap_app.data.remote.dto.LocationDto
+import com.houhackathon.greenmap_app.data.remote.dto.WeatherHanoiResponse
 import com.houhackathon.greenmap_app.domain.usecase.GetHanoiAqiUseCase
 import com.houhackathon.greenmap_app.domain.usecase.GetHanoiWeatherUseCase
 import com.houhackathon.greenmap_app.domain.usecase.GetLocationsUseCase
@@ -33,6 +35,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.supervisorScope
 
 @HiltViewModel
 class MapViewModel @Inject constructor(
@@ -59,78 +64,19 @@ class MapViewModel @Inject constructor(
     private fun loadStations() {
         viewModelScope.launch {
             _viewState.update { it.copy(isLoading = true, error = null) }
-            val weatherResult = getHanoiWeatherUseCase()
-            val aqiResult = getHanoiAqiUseCase()
             val errors = mutableListOf<String>()
-
-            val weatherMarkers = when (weatherResult) {
-                is Result.Success -> weatherResult.data.data.mapNotNull { dto ->
-                    val coords = dto.location?.coordinates
-                    if (coords == null || coords.size < 2) return@mapNotNull null
-                    val lon = coords[0]
-                    val lat = coords[1]
-                    WeatherStationMarker(
-                        id = dto.id ?: "${lat}_${lon}",
-                        name = dto.address?.addressRegion ?: dto.address?.addressLocality ?: "Hanoi",
-                        lat = lat,
-                        lon = lon,
-                        temperature = dto.temperature,
-                        weatherType = dto.weatherType
-                    )
+            val (weatherResult, aqiResult, locationResults) = supervisorScope {
+                val weatherDeferred = async { getHanoiWeatherUseCase() }
+                val aqiDeferred = async { getHanoiAqiUseCase() }
+                val locationDeferred = LocationType.values().map { type ->
+                    async { type to getLocationsUseCase(type) }
                 }
-                is Result.Error -> {
-                    val message = weatherResult.exception.message ?: appContext.getString(R.string.weather_error_generic)
-                    sendEvent(MapEvent.ShowToast(message))
-                    errors.add(message)
-                    emptyList()
-                }
-                Result.Loading -> emptyList()
+                Triple(weatherDeferred.await(), aqiDeferred.await(), locationDeferred.awaitAll())
             }
 
-            val aqiMarkers = when (aqiResult) {
-                is Result.Success -> aqiResult.data.data.mapNotNull { dto ->
-                    val coords = dto.location?.value?.coordinates
-                    if (coords == null || coords.size < 2) return@mapNotNull null
-                    val lon = coords[0]
-                    val lat = coords[1]
-                    val pm25Value = dto.pm25?.value
-                    val aqi = pm25Value?.let { calculateVietnamPm25Aqi(it) }
-                    AqiStationMarker(
-                        id = dto.id ?: "${lat}_${lon}",
-                        name = dto.stationName?.value ?: dto.id ?: "AQI Station",
-                        lat = lat,
-                        lon = lon,
-                        pm25 = pm25Value,
-                        aqi = aqi?.index,
-                        aqiCategory = aqi?.category
-                    )
-                }
-                is Result.Error -> {
-                    val message = aqiResult.exception.message ?: appContext.getString(R.string.weather_error_generic)
-                    sendEvent(MapEvent.ShowToast(message))
-                    errors.add(message)
-                    emptyList()
-                }
-                Result.Loading -> emptyList()
-            }
-
-            val locationMarkers = mutableListOf<LocationPoiMarker>()
-            LocationType.values().forEach { type ->
-                when (val locationResult = getLocationsUseCase(type)) {
-                    is Result.Success -> {
-                        locationMarkers += locationResult.data.mapNotNull { dto ->
-                            dto.toMarker(type)
-                        }
-                    }
-                    is Result.Error -> {
-                        val message = locationResult.exception.message
-                            ?: appContext.getString(R.string.location_error_generic, type.displayName)
-                        sendEvent(MapEvent.ShowToast(message))
-                        errors.add(message)
-                    }
-                    Result.Loading -> Unit
-                }
-            }
+            val weatherMarkers = buildWeatherMarkers(weatherResult, errors)
+            val aqiMarkers = buildAqiMarkers(aqiResult, errors)
+            val locationMarkers = buildLocationMarkers(locationResults, errors)
 
             _viewState.update {
                 it.copy(
@@ -142,6 +88,91 @@ class MapViewModel @Inject constructor(
                 )
             }
         }
+    }
+
+    private fun buildWeatherMarkers(
+        weatherResult: Result<WeatherHanoiResponse>,
+        errors: MutableList<String>
+    ): List<WeatherStationMarker> {
+        return when (weatherResult) {
+            is Result.Success -> weatherResult.data.data.mapNotNull { dto ->
+                val coords = dto.location?.coordinates
+                if (coords == null || coords.size < 2) return@mapNotNull null
+                val lon = coords[0]
+                val lat = coords[1]
+                WeatherStationMarker(
+                    id = dto.id ?: "${lat}_${lon}",
+                    name = dto.address?.addressRegion ?: dto.address?.addressLocality ?: "Hanoi",
+                    lat = lat,
+                    lon = lon,
+                    temperature = dto.temperature,
+                    weatherType = dto.weatherType
+                )
+            }
+            is Result.Error -> {
+                val message =
+                    weatherResult.exception.message ?: appContext.getString(R.string.weather_error_generic)
+                sendEvent(MapEvent.ShowToast(message))
+                errors.add(message)
+                emptyList()
+            }
+            Result.Loading -> emptyList()
+        }
+    }
+
+    private fun buildAqiMarkers(
+        aqiResult: Result<AqiHanoiResponse>,
+        errors: MutableList<String>
+    ): List<AqiStationMarker> {
+        return when (aqiResult) {
+            is Result.Success -> aqiResult.data.data.mapNotNull { dto ->
+                val coords = dto.location?.value?.coordinates
+                if (coords == null || coords.size < 2) return@mapNotNull null
+                val lon = coords[0]
+                val lat = coords[1]
+                val pm25Value = dto.pm25?.value
+                val aqi = pm25Value?.let { calculateVietnamPm25Aqi(it) }
+                AqiStationMarker(
+                    id = dto.id ?: "${lat}_${lon}",
+                    name = dto.stationName?.value ?: dto.id ?: "AQI Station",
+                    lat = lat,
+                    lon = lon,
+                    pm25 = pm25Value,
+                    aqi = aqi?.index,
+                    aqiCategory = aqi?.category
+                )
+            }
+            is Result.Error -> {
+                val message = aqiResult.exception.message
+                    ?: appContext.getString(R.string.weather_error_generic)
+                sendEvent(MapEvent.ShowToast(message))
+                errors.add(message)
+                emptyList()
+            }
+            Result.Loading -> emptyList()
+        }
+    }
+
+    private fun buildLocationMarkers(
+        locationResults: List<Pair<LocationType, Result<List<LocationDto>>>>,
+        errors: MutableList<String>
+    ): List<LocationPoiMarker> {
+        val locationMarkers = mutableListOf<LocationPoiMarker>()
+        locationResults.forEach { (type, result) ->
+            when (result) {
+                is Result.Success -> locationMarkers += result.data.mapNotNull { dto ->
+                    dto.toMarker(type)
+                }
+                is Result.Error -> {
+                    val message = result.exception.message
+                        ?: appContext.getString(R.string.location_error_generic, type.displayName)
+                    sendEvent(MapEvent.ShowToast(message))
+                    errors.add(message)
+                }
+                Result.Loading -> Unit
+            }
+        }
+        return locationMarkers
     }
 }
 

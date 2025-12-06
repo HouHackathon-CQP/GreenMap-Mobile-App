@@ -17,6 +17,7 @@ package com.houhackathon.greenmap_app.ui.notification
 
 import android.content.Intent
 import android.net.Uri
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -29,6 +30,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Tab
@@ -89,7 +91,11 @@ private fun NotificationTabs(
     onSelect: (NotificationTab) -> Unit
 ) {
     val tabs = listOf(NotificationTab.News, NotificationTab.Server)
-    TabRow(selectedTabIndex = tabs.indexOf(selected)) {
+    TabRow(
+        selectedTabIndex = tabs.indexOf(selected),
+        containerColor = MaterialTheme.colorScheme.surface,
+        contentColor = MaterialTheme.colorScheme.primary
+    ) {
         tabs.forEachIndexed { index, tab ->
             Tab(
                 selected = tab == selected,
@@ -109,7 +115,11 @@ private fun NewsList(
     error: String?,
     onRefresh: () -> Unit
 ) {
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f))
+    ) {
         when {
             isLoading -> CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
             error != null -> Text(
@@ -143,6 +153,11 @@ private fun NewsCard(news: NewsDto) {
                     context.startActivity(intent)
                 }
             }
+            .padding(vertical = 2.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
             if (!news.imageUrl.isNullOrBlank()) {
@@ -165,7 +180,7 @@ private fun NewsCard(news: NewsDto) {
                 Text(
                     text = listOfNotNull(news.source, news.publishedAt).joinToString(" • "),
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.padding(top = 4.dp)
                 )
             }

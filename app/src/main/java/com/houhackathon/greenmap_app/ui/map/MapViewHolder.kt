@@ -16,11 +16,15 @@
 package com.houhackathon.greenmap_app.ui.map
 
 import android.content.Context
+import com.houhackathon.greenmap_app.domain.model.LocationType
+import org.maplibre.android.annotations.Marker
+import org.maplibre.android.maps.MapLibreMap
 import org.maplibre.android.maps.MapView
 
 object MapViewHolder {
     private var mapView: MapView? = null
     private var initialized: Boolean = false
+    val markerStore: MarkerStore = MarkerStore()
 
     fun getOrCreate(context: Context): MapView {
         val current = mapView
@@ -38,8 +42,30 @@ object MapViewHolder {
     }
 
     fun destroy() {
+        mapView?.getMapAsync { markerStore.clear(it) }
         mapView?.onDestroy()
         mapView = null
         initialized = false
+        markerStore.clear()
+    }
+}
+
+class MarkerStore(
+    val markerInfoMap: MutableMap<Marker, MarkerInfo> = mutableMapOf(),
+    val weatherMarkers: MutableList<Marker> = mutableListOf(),
+    val aqiMarkers: MutableList<Marker> = mutableListOf(),
+    val poiMarkers: MutableMap<LocationType, MutableList<Marker>> = mutableMapOf(),
+) {
+    fun clear(mapLibreMap: MapLibreMap? = null) {
+        val map = mapLibreMap
+        if (map != null) {
+            weatherMarkers.forEach(map::removeAnnotation)
+            aqiMarkers.forEach(map::removeAnnotation)
+            poiMarkers.values.flatten().forEach(map::removeAnnotation)
+        }
+        weatherMarkers.clear()
+        aqiMarkers.clear()
+        poiMarkers.clear()
+        markerInfoMap.clear()
     }
 }

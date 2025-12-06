@@ -85,6 +85,7 @@ fun MapInitializer(
     onMapReady: (MapLibreMap) -> Unit,
     onMapPrepared: () -> Unit,
     onSetup: (MapLibreMap) -> Unit,
+    onReuse: (MapLibreMap) -> Unit = {},
 ) {
     LaunchedEffect(mapView, hasLocationPermission) {
         if (!MapViewHolder.isInitialized()) {
@@ -95,9 +96,15 @@ fun MapInitializer(
             }
         } else {
             if (hasLocationPermission) {
-                mapView.getMapAsync { enableMyLocation(it, mapView) }
+                mapView.getMapAsync {
+                    enableMyLocation(it, mapView)
+                    onReuse(it)
+                }
             }
-            mapView.getMapAsync { onMapReady(it) }
+            mapView.getMapAsync {
+                onMapReady(it)
+                onReuse(it)
+            }
             onMapPrepared()
         }
     }
