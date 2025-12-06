@@ -36,6 +36,7 @@ import com.houhackathon.greenmap_app.ui.home.HomeIntent
 import com.houhackathon.greenmap_app.ui.home.HomeScreen
 import com.houhackathon.greenmap_app.ui.home.HomeViewModel
 import com.houhackathon.greenmap_app.ui.map.MapScreen
+import com.houhackathon.greenmap_app.ui.notification.NotificationScreen
 
 
 fun EntryProviderScope<NavKey>.featureASection(
@@ -62,6 +63,10 @@ fun EntryProviderScope<NavKey>.featureASection(
             viewState = viewState,
             onRequestLocation = { viewModel.processIntent(HomeIntent.UseCurrentLocation) },
             onRefreshForecast = { viewModel.processIntent(HomeIntent.RefreshForecast) },
+            onAnalyzeWithAi = { force ->
+                viewModel.processIntent(HomeIntent.AnalyzeWeatherWithAi(forceRefresh = force))
+            },
+            onSelectAiProvider = { provider -> viewModel.processIntent(HomeIntent.SelectAiProvider(provider)) },
             onNavigateMap = { viewModel.processIntent(HomeIntent.NavigateToMap) }
         )
 
@@ -81,7 +86,7 @@ fun EntryProviderScope<NavKey>.featureCSection(
     onSubRouteClick: () -> Unit,
 ) {
     entry<com.houhackathon.greenmap_app.Notification> {
-
+        NotificationScreen()
     }
 }
 

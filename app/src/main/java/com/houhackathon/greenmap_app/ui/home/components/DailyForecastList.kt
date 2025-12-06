@@ -19,7 +19,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material3.Divider
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -73,7 +74,7 @@ fun DailyForecastList(
                 items.forEachIndexed { index, day ->
                     DailyRow(day)
                     if (index != items.lastIndex) {
-                        Divider(color = Color.White.copy(alpha = 0.3f))
+                        HorizontalDivider(color = Color.White.copy(alpha = 0.3f))
                     }
                 }
             }
@@ -102,13 +103,14 @@ private fun DailyRow(day: DailyWeather) {
             )
         }
         Row(
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
                 painter = painterResource(R.drawable.thermostat),
                 contentDescription = null,
-                tint = Color.White.copy(alpha = 0.9f)
+                tint = Color.White.copy(alpha = 0.9f),
+                modifier = Modifier.size(20.dp)
             )
             Text(
                 text = buildString {

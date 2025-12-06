@@ -19,10 +19,14 @@ import com.houhackathon.greenmap_app.data.repository.HealthRepositoryImpl
 import com.houhackathon.greenmap_app.data.repository.AuthRepositoryImpl
 import com.houhackathon.greenmap_app.data.repository.WeatherRepositoryImpl
 import com.houhackathon.greenmap_app.data.repository.LocationRepositoryImpl
+import com.houhackathon.greenmap_app.data.repository.NewsRepositoryImpl
+import com.houhackathon.greenmap_app.data.repository.AiInsightCacheRepositoryImpl
 import com.houhackathon.greenmap_app.domain.repository.HealthRepository
 import com.houhackathon.greenmap_app.domain.repository.AuthRepository
 import com.houhackathon.greenmap_app.domain.repository.WeatherRepository
 import com.houhackathon.greenmap_app.domain.repository.LocationRepository
+import com.houhackathon.greenmap_app.domain.repository.NewsRepository
+import com.houhackathon.greenmap_app.domain.repository.AiInsightCacheRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -47,4 +51,12 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindLocationRepository(impl: LocationRepositoryImpl): LocationRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindNewsRepository(impl: NewsRepositoryImpl): NewsRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindAiInsightCacheRepository(impl: AiInsightCacheRepositoryImpl): AiInsightCacheRepository
 }

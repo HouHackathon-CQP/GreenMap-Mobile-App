@@ -19,6 +19,7 @@ import com.houhackathon.greenmap_app.core.network.safeApiCall
 import com.houhackathon.greenmap_app.data.remote.api.ApiService
 import com.houhackathon.greenmap_app.data.remote.dto.ApiStatusResponse
 import com.houhackathon.greenmap_app.data.remote.dto.LoginRequest
+import com.houhackathon.greenmap_app.domain.model.AiProvider
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -45,4 +46,10 @@ class RemoteDataSource @Inject constructor(
 
     suspend fun getLocations(locationType: String, limit: Int, skip: Int) =
         safeApiCall { apiService.getLocations(locationType, limit, skip) }
+
+    suspend fun getHanoimoiNews(limit: Int) =
+        safeApiCall { apiService.getHanoimoiNews(limit) }
+
+    suspend fun getAiWeatherInsights(provider: AiProvider, lat: Double?, lon: Double?) =
+        safeApiCall { apiService.getAiWeatherInsights(provider.queryName, lat, lon) }
 }

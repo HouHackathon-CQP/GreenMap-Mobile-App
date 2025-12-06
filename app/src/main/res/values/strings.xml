@@ -46,5 +46,15 @@
     <string name="weather_location_unavailable">Không lấy được vị trí, vui lòng thử lại</string>
     <string name="btn_request_location">Cấp quyền vị trí</string>
     <string name="location_error_generic">Không lấy được dữ liệu %1$s, thử lại sau</string>
+    <string name="news_error_generic">Không tải được tin tức, thử lại sau</string>
+    <string name="ai_insight_title">Phân tích dự báo bằng AI</string>
+    <string name="ai_insight_subtitle">Tóm tắt thời tiết và không khí cho bạn</string>
+    <string name="ai_error_generic">Không lấy được phân tích AI, thử lại sau</string>
+    <string name="ai_action_analyze">Phân tích ngay</string>
+    <string name="ai_action_refresh">Làm mới phân tích</string>
+    <string name="ai_provider_gemini">Gemini</string>
+    <string name="ai_provider_grog">Groq</string>
+    <string name="ai_loading">Đang tạo báo cáo AI...</string>
+    <string name="ai_model_label">Mô hình</string>
 
 </resources>

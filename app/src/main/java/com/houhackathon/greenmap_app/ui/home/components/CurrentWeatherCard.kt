@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -47,49 +48,63 @@ fun CurrentWeatherCard(
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(22.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.0f)),
-        elevation = CardDefaults.cardElevation(defaultElevation = 10.dp)
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.Transparent),
+        elevation = CardDefaults.cardElevation(defaultElevation = 12.dp)
     ) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(
-                    brush = Brush.horizontalGradient(
-                        listOf(Color(0xFF1EB980), Color(0xFF0F9D58))
+                    brush = Brush.linearGradient(
+                        colors = listOf(
+                            Color(0xFF1EB980),
+                            Color(0xFF0F9D58),
+                            Color(0xFF0D7C4D)
+                        )
                     ),
-                    shape = RoundedCornerShape(22.dp)
+                    shape = RoundedCornerShape(24.dp)
                 )
-                .padding(20.dp)
+                .padding(24.dp)
         ) {
             Column(
-                verticalArrangement = Arrangement.spacedBy(12.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
                         text = stringResource(id = R.string.weather_current),
-                        style = MaterialTheme.typography.titleMedium.copy(
+                        style = MaterialTheme.typography.titleLarge.copy(
                             color = Color.White,
                             fontWeight = FontWeight.Bold
                         )
                     )
                     if (!source.isNullOrBlank()) {
-                        Text(
-                            text = source,
-                            style = MaterialTheme.typography.bodySmall.copy(
-                                color = Color.White.copy(alpha = 0.8f)
+                        Card(
+                            colors = CardDefaults.cardColors(
+                                containerColor = Color.White.copy(alpha = 0.2f)
+                            ),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Text(
+                                text = source,
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    color = Color.White,
+                                    fontWeight = FontWeight.Medium
+                                ),
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
                             )
-                        )
+                        }
                     }
                 }
 
                 Text(
                     text = current?.temp?.let { "${it}°C" } ?: "--°C",
-                    style = MaterialTheme.typography.displaySmall.copy(
+                    style = MaterialTheme.typography.displayLarge.copy(
                         color = Color.White,
                         fontWeight = FontWeight.ExtraBold
                     )
@@ -97,21 +112,27 @@ fun CurrentWeatherCard(
 
                 Text(
                     text = current?.desc ?: stringResource(id = R.string.weather_placeholder_desc),
-                    style = MaterialTheme.typography.bodyLarge.copy(color = Color.White.copy(alpha = 0.9f))
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        color = Color.White.copy(alpha = 0.95f),
+                        fontWeight = FontWeight.Medium
+                    )
                 )
 
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(20.dp)
                 ) {
                     WeatherStat(
                         iconRes = R.drawable.water_drop,
                         label = stringResource(id = R.string.weather_humidity),
-                        value = current?.humidity?.let { "$it%" } ?: "--"
+                        value = current?.humidity?.let { "$it%" } ?: "--",
+                        modifier = Modifier.weight(1f)
                     )
                     WeatherStat(
                         iconRes = R.drawable.air,
                         label = stringResource(id = R.string.weather_wind),
-                        value = current?.windSpeed?.let { "${it} km/h" } ?: "--"
+                        value = current?.windSpeed?.let { "${it} km/h" } ?: "--",
+                        modifier = Modifier.weight(1f)
                     )
                 }
             }
@@ -124,28 +145,41 @@ private fun WeatherStat(
     iconRes: Int,
     label: String,
     value: String,
+    modifier: Modifier = Modifier
 ) {
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalAlignment = Alignment.CenterVertically
+    Card(
+        modifier = modifier,
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White.copy(alpha = 0.15f)
+        ),
+        shape = RoundedCornerShape(16.dp)
     ) {
-        Icon(
-            painter = painterResource(id = iconRes),
-            contentDescription = null,
-            tint = Color.White
-        )
-        Column {
-            Text(
-                text = label,
-                style = MaterialTheme.typography.bodySmall.copy(color = Color.White.copy(alpha = 0.8f))
+        Row(
+            modifier = Modifier.padding(12.dp),
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                painter = painterResource(id = iconRes),
+                contentDescription = null,
+                tint = Color.White,
+                modifier = Modifier.size(24.dp)
             )
-            Text(
-                text = value,
-                style = MaterialTheme.typography.bodyLarge.copy(
-                    color = Color.White,
-                    fontWeight = FontWeight.Bold
+            Column {
+                Text(
+                    text = label,
+                    style = MaterialTheme.typography.labelSmall.copy(
+                        color = Color.White.copy(alpha = 0.85f)
+                    )
                 )
-            )
+                Text(
+                    text = value,
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold
+                    )
+                )
+            }
         }
     }
 }

@@ -89,34 +89,41 @@ fun HourlyForecastRow(
 @Composable
 private fun HourlyChip(hour: HourlyWeather) {
     Card(
-        shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.9f))
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.95f)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column(
             modifier = Modifier
-                .padding(horizontal = 12.dp, vertical = 10.dp),
-            verticalArrangement = Arrangement.spacedBy(6.dp),
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
                 text = formatHour(hour.time),
-                style = MaterialTheme.typography.labelMedium,
-                fontWeight = FontWeight.Bold
+                style = MaterialTheme.typography.labelMedium.copy(
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF0D7C4D)
+                )
             )
             Icon(
                 painter = painterResource(R.drawable.cloud),
                 contentDescription = null,
                 tint = Color(0xFF0F9D58),
-                modifier = Modifier.size(18.dp)
+                modifier = Modifier.size(24.dp)
             )
             Text(
                 text = hour.temp?.let { "${it}°" } ?: "--",
-                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold)
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF0D7C4D)
+                )
             )
             Text(
                 text = hour.desc ?: "",
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                style = MaterialTheme.typography.labelSmall.copy(
+                    color = Color(0xFF666666)
+                )
             )
         }
     }
