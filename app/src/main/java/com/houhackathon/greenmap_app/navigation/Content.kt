@@ -60,8 +60,8 @@ fun EntryProviderScope<NavKey>.featureASection(
 
         HomeScreen(
             viewState = viewState,
-            onCheckServer = { viewModel.processIntent(HomeIntent.CheckServer) },
-            onCheckDatabase = { viewModel.processIntent(HomeIntent.CheckDatabase) },
+            onRequestLocation = { viewModel.processIntent(HomeIntent.UseCurrentLocation) },
+            onRefreshForecast = { viewModel.processIntent(HomeIntent.RefreshForecast) },
             onNavigateMap = { viewModel.processIntent(HomeIntent.NavigateToMap) }
         )
 

@@ -17,8 +17,12 @@ package com.houhackathon.greenmap_app.di
 
 import com.houhackathon.greenmap_app.data.repository.HealthRepositoryImpl
 import com.houhackathon.greenmap_app.data.repository.AuthRepositoryImpl
+import com.houhackathon.greenmap_app.data.repository.WeatherRepositoryImpl
+import com.houhackathon.greenmap_app.data.repository.LocationRepositoryImpl
 import com.houhackathon.greenmap_app.domain.repository.HealthRepository
 import com.houhackathon.greenmap_app.domain.repository.AuthRepository
+import com.houhackathon.greenmap_app.domain.repository.WeatherRepository
+import com.houhackathon.greenmap_app.domain.repository.LocationRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -35,4 +39,12 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindAuthRepository(impl: AuthRepositoryImpl): AuthRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindWeatherRepository(impl: WeatherRepositoryImpl): WeatherRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindLocationRepository(impl: LocationRepositoryImpl): LocationRepository
 }

@@ -33,4 +33,16 @@ class RemoteDataSource @Inject constructor(
 
     suspend fun login(username: String, password: String) =
         safeApiCall { apiService.login(LoginRequest(username, password)) }
+
+    suspend fun getWeatherForecast(lat: Double, lon: Double) =
+        safeApiCall { apiService.getWeatherForecast(lat, lon) }
+
+    suspend fun getHanoiWeather(limit: Int) =
+        safeApiCall { apiService.getHanoiWeather(limit) }
+
+    suspend fun getHanoiAqi(limit: Int) =
+        safeApiCall { apiService.getHanoiAqi(limit) }
+
+    suspend fun getLocations(locationType: String, limit: Int, skip: Int) =
+        safeApiCall { apiService.getLocations(locationType, limit, skip) }
 }

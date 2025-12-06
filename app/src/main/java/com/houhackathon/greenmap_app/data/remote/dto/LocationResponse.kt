@@ -17,17 +17,23 @@ package com.houhackathon.greenmap_app.data.remote.dto
 
 import com.google.gson.annotations.SerializedName
 
-data class LoginResponse(
-    @SerializedName("access_token")
-    val token: String? = null,
-    @SerializedName("token_type")
-    val bearer: String? = null,
-    @SerializedName("id")
-    val id: Int? = null,
-    @SerializedName("email")
-    val email: String? = null,
-    @SerializedName("full_name")
-    val fullName: String? = null,
-    @SerializedName("role")
-    val role: String? = null
+data class LocationDto(
+    @SerializedName("@context")
+    val context: String? = null,
+    val id: String? = null,
+    val type: String? = null,
+    val location: LocationPointDto? = null,
+    val description: String? = null,
+    val name: String? = null,
+    @SerializedName("data_source")
+    val dataSource: String? = null,
+    @SerializedName("db_id")
+    val dbId: Int? = null,
+    @SerializedName("is_editable")
+    val isEditable: Boolean? = null,
+)
+
+data class LocationPointDto(
+    val type: String? = null,
+    val coordinates: List<Double> = emptyList(), // [lon, lat]
 )

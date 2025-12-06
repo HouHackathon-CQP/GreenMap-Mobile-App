@@ -18,10 +18,15 @@ package com.houhackathon.greenmap_app.data.remote.api
 import com.houhackathon.greenmap_app.data.remote.dto.ApiStatusResponse
 import com.houhackathon.greenmap_app.data.remote.dto.LoginRequest
 import com.houhackathon.greenmap_app.data.remote.dto.LoginResponse
+import com.houhackathon.greenmap_app.data.remote.dto.WeatherForecastResponse
+import com.houhackathon.greenmap_app.data.remote.dto.WeatherHanoiResponse
+import com.houhackathon.greenmap_app.data.remote.dto.AqiHanoiResponse
+import com.houhackathon.greenmap_app.data.remote.dto.LocationDto
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.Query
 
 interface ApiService {
     @GET("/")
@@ -32,4 +37,29 @@ interface ApiService {
 
     @POST("login")
     suspend fun login(@Body body: LoginRequest): Response<LoginResponse>
+
+    @GET("weather/forecast")
+    suspend fun getWeatherForecast(
+        @Query("lat") lat: Double,
+        @Query("lon") lon: Double,
+    ): Response<WeatherForecastResponse>
+
+    @GET("weather/hanoi")
+    suspend fun getHanoiWeather(
+        @Query("limit") limit: Int = 100,
+    ): Response<WeatherHanoiResponse>
+
+    @GET("aqi/hanoi")
+    suspend fun getHanoiAqi(
+        @Query("limit") limit: Int = 100,
+    ): Response<AqiHanoiResponse>
+
+    @GET("locations")
+    suspend fun getLocations(
+        @Query("location_type") locationType: String,
+        @Query("limit") limit: Int = 1000,
+        @Query("skip") skip: Int = 0,
+        @Query("options") options: String = "keyValues",
+        @Query("raw") raw: Boolean = false,
+    ): Response<List<LocationDto>>
 }
