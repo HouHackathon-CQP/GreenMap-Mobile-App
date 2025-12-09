@@ -13,21 +13,23 @@
  * limitations under the License.
  */
 
-package com.houhackathon.greenmap_app.data.local
+package com.houhackathon.greenmap_app.data.local.dao
 
-import androidx.room.Database
-import androidx.room.RoomDatabase
-import com.houhackathon.greenmap_app.data.local.dao.AiInsightDao
-import com.houhackathon.greenmap_app.data.local.dao.NotificationDao
-import com.houhackathon.greenmap_app.data.local.entity.AiInsightEntity
+import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
 import com.houhackathon.greenmap_app.data.local.entity.ServerNotificationEntity
+import kotlinx.coroutines.flow.Flow
 
-@Database(
-    entities = [AiInsightEntity::class, ServerNotificationEntity::class],
-    version = 2,
-    exportSchema = true
-)
-abstract class AppDatabase : RoomDatabase() {
-    abstract fun aiInsightDao(): AiInsightDao
-    abstract fun notificationDao(): NotificationDao
+@Dao
+interface NotificationDao {
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsert(notification: ServerNotificationEntity)
+
+    @Query("SELECT * FROM server_notifications ORDER BY receivedAt DESC")
+    fun observeNotifications(): Flow<List<ServerNotificationEntity>>
+
+    @Query("DELETE FROM server_notifications")
+    suspend fun clearAll()
 }

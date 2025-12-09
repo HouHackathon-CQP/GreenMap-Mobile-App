@@ -13,13 +13,19 @@
  * limitations under the License.
  */
 
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
-plugins {
-    alias(libs.plugins.android.application) apply false
-    alias(libs.plugins.kotlin.android) apply false
-    alias(libs.plugins.kotlin.compose) apply false
-    alias(libs.plugins.dagger.hilt.android) apply false
-    alias(libs.plugins.ksp) apply false
-    alias(libs.plugins.google.services) apply false
-    alias(libs.plugins.firebase.crashlytics) apply false
-}
+package com.houhackathon.greenmap_app.data.local.entity
+
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
+@Entity(tableName = "server_notifications")
+data class ServerNotificationEntity(
+    @PrimaryKey val id: String,
+    val title: String,
+    val body: String,
+    val deeplink: String?,
+    val imageUrl: String?,
+    val receivedAt: Long,
+    val source: String?,
+    val rawPayload: String?,
+)

@@ -19,10 +19,12 @@ import com.houhackathon.greenmap_app.core.mvi.MviIntent
 import com.houhackathon.greenmap_app.core.mvi.MviSingleEvent
 import com.houhackathon.greenmap_app.core.mvi.MviViewState
 import com.houhackathon.greenmap_app.data.remote.dto.NewsDto
+import com.houhackathon.greenmap_app.domain.model.ServerNotification
 
 data class NotificationViewState(
     val isLoading: Boolean = false,
     val news: List<NewsDto> = emptyList(),
+    val serverNotifications: List<ServerNotification> = emptyList(),
     val error: String? = null,
     val selectedTab: NotificationTab = NotificationTab.News,
 ) : MviViewState
@@ -32,6 +34,7 @@ enum class NotificationTab { News, Server }
 sealed class NotificationIntent : MviIntent {
     data object LoadNews : NotificationIntent()
     data class SelectTab(val tab: NotificationTab) : NotificationIntent()
+    data object ClearServerNotifications : NotificationIntent()
 }
 
 sealed class NotificationEvent : MviSingleEvent {

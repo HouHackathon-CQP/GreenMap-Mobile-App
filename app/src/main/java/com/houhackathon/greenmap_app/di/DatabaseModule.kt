@@ -19,6 +19,7 @@ import android.content.Context
 import androidx.room.Room
 import com.houhackathon.greenmap_app.data.local.AppDatabase
 import com.houhackathon.greenmap_app.data.local.dao.AiInsightDao
+import com.houhackathon.greenmap_app.data.local.dao.NotificationDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -43,4 +44,8 @@ object DatabaseModule {
     @Provides
     @Singleton
     fun provideAiInsightDao(db: AppDatabase): AiInsightDao = db.aiInsightDao()
+
+    @Provides
+    @Singleton
+    fun provideNotificationDao(db: AppDatabase): NotificationDao = db.notificationDao()
 }

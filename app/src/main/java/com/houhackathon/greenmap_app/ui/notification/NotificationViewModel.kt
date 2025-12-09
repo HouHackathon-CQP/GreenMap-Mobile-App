@@ -20,6 +20,9 @@ import androidx.lifecycle.viewModelScope
 import com.houhackathon.greenmap_app.R
 import com.houhackathon.greenmap_app.core.mvi.BaseMviViewModel
 import com.houhackathon.greenmap_app.domain.usecase.GetHanoimoiNewsUseCase
+import com.houhackathon.greenmap_app.domain.usecase.ClearServerNotificationsUseCase
+import com.houhackathon.greenmap_app.domain.usecase.ObserveServerNotificationsUseCase
+import com.houhackathon.greenmap_app.domain.model.ServerNotification
 import com.houhackathon.greenmap_app.extension.flow.Result
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -33,6 +36,8 @@ import kotlinx.coroutines.launch
 @HiltViewModel
 class NotificationViewModel @Inject constructor(
     private val getHanoimoiNews: GetHanoimoiNewsUseCase,
+    private val observeServerNotifications: ObserveServerNotificationsUseCase,
+    private val clearServerNotifications: ClearServerNotificationsUseCase,
     @ApplicationContext private val appContext: Context,
 ) : BaseMviViewModel<NotificationIntent, NotificationViewState, NotificationEvent>() {
 
@@ -41,6 +46,7 @@ class NotificationViewModel @Inject constructor(
 
     init {
         viewModelScope.launch { intentSharedFlow.collect(::handleIntent) }
+        viewModelScope.launch { observeServerNotifications().collect(::onNotificationsUpdated) }
         processIntent(NotificationIntent.LoadNews)
     }
 
@@ -48,7 +54,12 @@ class NotificationViewModel @Inject constructor(
         when (intent) {
             NotificationIntent.LoadNews -> loadNews()
             is NotificationIntent.SelectTab -> _viewState.update { it.copy(selectedTab = intent.tab) }
+            NotificationIntent.ClearServerNotifications -> clearNotifications()
         }
+    }
+
+    private fun onNotificationsUpdated(notifications: List<ServerNotification>) {
+        _viewState.update { it.copy(serverNotifications = notifications) }
     }
 
     private fun loadNews(limit: Int = 50) {
@@ -66,6 +77,18 @@ class NotificationViewModel @Inject constructor(
                 }
 
                 Result.Loading -> _viewState.update { it.copy(isLoading = true) }
+            }
+        }
+    }
+
+    private fun clearNotifications() {
+        viewModelScope.launch {
+            when (val result = clearServerNotifications()) {
+                is Result.Error -> {
+                    val message = result.exception.message ?: appContext.getString(R.string.news_error_generic)
+                    sendEvent(NotificationEvent.ShowToast(message))
+                }
+                else -> Unit
             }
         }
     }

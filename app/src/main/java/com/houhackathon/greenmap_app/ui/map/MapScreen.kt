@@ -332,7 +332,7 @@ private fun QuickFilterRow(
     }
 }
 
-private val defaultSelectedLayers = setOf(MapLayer.WEATHER, MapLayer.AQI)
+private val defaultSelectedLayers = setOf(MapLayer.WEATHER)
 
 private val mapLayerSetSaver = listSaver<Set<MapLayer>, String>(
     save = { layers -> layers.map(MapLayer::name) },

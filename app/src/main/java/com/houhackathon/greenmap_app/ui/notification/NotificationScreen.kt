@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -36,19 +37,25 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.houhackathon.greenmap_app.data.remote.dto.NewsDto
 import coil.compose.AsyncImage
-import androidx.compose.ui.layout.ContentScale
+import com.houhackathon.greenmap_app.data.remote.dto.NewsDto
+import com.houhackathon.greenmap_app.domain.model.ServerNotification
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @Composable
 fun NotificationScreen() {
@@ -80,7 +87,10 @@ fun NotificationScreen() {
                 onRefresh = { viewModel.processIntent(NotificationIntent.LoadNews) }
             )
 
-            NotificationTab.Server -> ServerFeedPlaceholder()
+            NotificationTab.Server -> ServerNotificationList(
+                notifications = viewState.serverNotifications,
+                onClear = { viewModel.processIntent(NotificationIntent.ClearServerNotifications) }
+            )
         }
     }
 }
@@ -198,11 +208,107 @@ private fun NewsCard(news: NewsDto) {
 }
 
 @Composable
-private fun ServerFeedPlaceholder() {
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Text(
-            text = "Tin tức từ server sẽ xuất hiện ở đây.",
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
+private fun ServerNotificationList(
+    notifications: List<ServerNotification>,
+    onClear: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.12f))
+    ) {
+        if (notifications.isEmpty()) {
+            Column(
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    text = "Chưa có thông báo từ server",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = "Khi server đẩy cảnh báo, ứng dụng sẽ hiển thị ở đây và ngoài hệ thống.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        } else {
+            LazyColumn(
+                contentPadding = PaddingValues(12.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                item {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 4.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Thông báo từ server",
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                        TextButton(onClick = onClear) {
+                            Text(text = "Xóa tất cả")
+                        }
+                    }
+                }
+                items(notifications, key = { it.id }) { item ->
+                    ServerNotificationCard(item)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ServerNotificationCard(notification: ServerNotification) {
+    val receivedAt = remember(notification.receivedAt) {
+        val formatter = SimpleDateFormat("HH:mm dd/MM", Locale.getDefault())
+        formatter.format(Date(notification.receivedAt))
+    }
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Text(
+                text = notification.title,
+                style = MaterialTheme.typography.titleMedium,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
+            )
+            Text(
+                text = notification.body,
+                style = MaterialTheme.typography.bodyMedium,
+                maxLines = 4,
+                overflow = TextOverflow.Ellipsis
+            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = receivedAt,
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                notification.source?.let {
+                    Text(
+                        text = it,
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+        }
     }
 }
