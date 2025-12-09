@@ -38,6 +38,8 @@ ksp = "2.0.21-1.0.28"
 timber = "5.0.1"
 coil = "2.7.0"
 lottie = "6.6.0"
+# --- Coroutines Extensions ---
+coroutinesPlayServices = "1.8.1"
 #--- Nav 3 ---
 nav3Core = "1.0.0"
 playServicesLocation = "21.3.0"
@@ -67,6 +69,8 @@ firebase-auth = { group = "com.google.firebase", name = "firebase-auth-ktx" }
 firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore-ktx" }
 firebase-storage = { group = "com.google.firebase", name = "firebase-storage-ktx" }
 firebase-messaging = { group = "com.google.firebase", name = "firebase-messaging-ktx" }
+firebase-remote-config = { group = "com.google.firebase", name = "firebase-config-ktx" }
+kotlinx-coroutines-play-services = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-play-services", version.ref = "coroutinesPlayServices" }
 
 # --- Jetpack Compose ---
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
@@ -168,5 +172,6 @@ firebase = [
     "firebase-analytics",
     "firebase-crashlytics",
     "firebase-auth",
-    "firebase-firestore"
+    "firebase-firestore",
+    "firebase-remote-config"
 ]

@@ -124,6 +124,7 @@ dependencies {
     implementation(platform(libs.firebase.bom))
     implementation(libs.bundles.firebase)
     implementation(libs.firebase.messaging)
+    implementation(libs.kotlinx.coroutines.play.services)
 
 
     // --- Utils ---

@@ -26,6 +26,7 @@ data class MapViewState(
     val weatherStations: List<WeatherStationMarker> = emptyList(),
     val aqiStations: List<AqiStationMarker> = emptyList(),
     val poiStations: List<LocationPoiMarker> = emptyList(),
+    val isDirectionEnabled: Boolean = false,
 ) : MviViewState
 
 data class MarkerInfo(
@@ -33,6 +34,8 @@ data class MarkerInfo(
     val subtitle: String? = null,
     val description: String? = null,
     val category: String? = null,
+    val lat: Double,
+    val lon: Double,
 )
 
 data class WeatherStationMarker(

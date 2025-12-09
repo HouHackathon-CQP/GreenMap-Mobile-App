@@ -55,11 +55,17 @@ class NotificationViewModel @Inject constructor(
             NotificationIntent.LoadNews -> loadNews()
             is NotificationIntent.SelectTab -> _viewState.update { it.copy(selectedTab = intent.tab) }
             NotificationIntent.ClearServerNotifications -> clearNotifications()
+            is NotificationIntent.ShowNotificationDetail -> _viewState.update { it.copy(selectedNotification = intent.notification) }
+            NotificationIntent.DismissNotificationDetail -> _viewState.update { it.copy(selectedNotification = null) }
         }
     }
 
     private fun onNotificationsUpdated(notifications: List<ServerNotification>) {
-        _viewState.update { it.copy(serverNotifications = notifications) }
+        _viewState.update { state ->
+            val selected = state.selectedNotification
+            val validSelected = notifications.firstOrNull { it.id == selected?.id }
+            state.copy(serverNotifications = notifications, selectedNotification = validSelected)
+        }
     }
 
     private fun loadNews(limit: Int = 50) {

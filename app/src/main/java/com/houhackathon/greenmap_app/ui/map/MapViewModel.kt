@@ -19,6 +19,8 @@ import android.content.Context
 import androidx.lifecycle.viewModelScope
 import com.houhackathon.greenmap_app.R
 import com.houhackathon.greenmap_app.core.mvi.BaseMviViewModel
+import com.houhackathon.greenmap_app.core.remoteconfig.RemoteConfigKeys
+import com.houhackathon.greenmap_app.core.remoteconfig.RemoteConfigManager
 import com.houhackathon.greenmap_app.data.remote.dto.AqiHanoiResponse
 import com.houhackathon.greenmap_app.data.remote.dto.LocationDto
 import com.houhackathon.greenmap_app.data.remote.dto.WeatherHanoiResponse
@@ -44,6 +46,7 @@ class MapViewModel @Inject constructor(
     private val getHanoiWeatherUseCase: GetHanoiWeatherUseCase,
     private val getHanoiAqiUseCase: GetHanoiAqiUseCase,
     private val getLocationsUseCase: GetLocationsUseCase,
+    private val remoteConfigManager: RemoteConfigManager,
     @ApplicationContext private val appContext: Context,
 ) : BaseMviViewModel<MapIntent, MapViewState, MapEvent>() {
 
@@ -53,12 +56,19 @@ class MapViewModel @Inject constructor(
     init {
         viewModelScope.launch { intentSharedFlow.collect(::handleIntent) }
         processIntent(MapIntent.LoadStations)
+        viewModelScope.launch { refreshDirectionFlag() }
     }
 
     private fun handleIntent(intent: MapIntent) {
         when (intent) {
             MapIntent.LoadStations, MapIntent.RefreshStations -> loadStations()
         }
+    }
+
+    private suspend fun refreshDirectionFlag() {
+        remoteConfigManager.fetchAndActivate()
+        val enabled = remoteConfigManager.getBoolean(RemoteConfigKeys.DIRECTION_FLAG)
+        _viewState.update { it.copy(isDirectionEnabled = enabled) }
     }
 
     private fun loadStations() {

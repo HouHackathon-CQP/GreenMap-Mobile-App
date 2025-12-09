@@ -26,6 +26,7 @@ data class NotificationViewState(
     val news: List<NewsDto> = emptyList(),
     val serverNotifications: List<ServerNotification> = emptyList(),
     val error: String? = null,
+    val selectedNotification: ServerNotification? = null,
     val selectedTab: NotificationTab = NotificationTab.News,
 ) : MviViewState
 
@@ -35,6 +36,8 @@ sealed class NotificationIntent : MviIntent {
     data object LoadNews : NotificationIntent()
     data class SelectTab(val tab: NotificationTab) : NotificationIntent()
     data object ClearServerNotifications : NotificationIntent()
+    data class ShowNotificationDetail(val notification: ServerNotification) : NotificationIntent()
+    data object DismissNotificationDetail : NotificationIntent()
 }
 
 sealed class NotificationEvent : MviSingleEvent {

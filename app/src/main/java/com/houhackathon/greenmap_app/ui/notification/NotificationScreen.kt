@@ -17,6 +17,7 @@ package com.houhackathon.greenmap_app.ui.notification
 
 import android.content.Intent
 import android.net.Uri
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -28,16 +29,25 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -45,6 +55,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
@@ -73,24 +84,33 @@ fun NotificationScreen() {
         }
     }
 
-    Column(modifier = Modifier.fillMaxSize()) {
-        NotificationTabs(
-            selected = viewState.selectedTab,
-            onSelect = { viewModel.processIntent(NotificationIntent.SelectTab(it)) }
+    val selectedNotification = viewState.selectedNotification
+    if (selectedNotification != null) {
+        NotificationDetailScreen(
+            notification = selectedNotification,
+            onBack = { viewModel.processIntent(NotificationIntent.DismissNotificationDetail) }
         )
-
-        when (viewState.selectedTab) {
-            NotificationTab.News -> NewsList(
-                news = viewState.news,
-                isLoading = viewState.isLoading,
-                error = viewState.error,
-                onRefresh = { viewModel.processIntent(NotificationIntent.LoadNews) }
+    } else {
+        Column(modifier = Modifier.fillMaxSize()) {
+            NotificationTabs(
+                selected = viewState.selectedTab,
+                onSelect = { viewModel.processIntent(NotificationIntent.SelectTab(it)) }
             )
 
-            NotificationTab.Server -> ServerNotificationList(
-                notifications = viewState.serverNotifications,
-                onClear = { viewModel.processIntent(NotificationIntent.ClearServerNotifications) }
-            )
+            when (viewState.selectedTab) {
+                NotificationTab.News -> NewsList(
+                    news = viewState.news,
+                    isLoading = viewState.isLoading,
+                    error = viewState.error,
+                    onRefresh = { viewModel.processIntent(NotificationIntent.LoadNews) }
+                )
+
+                NotificationTab.Server -> ServerNotificationList(
+                    notifications = viewState.serverNotifications,
+                    onClear = { viewModel.processIntent(NotificationIntent.ClearServerNotifications) },
+                    onNotificationClick = { viewModel.processIntent(NotificationIntent.ShowNotificationDetail(it)) }
+                )
+            }
         }
     }
 }
@@ -110,7 +130,7 @@ private fun NotificationTabs(
             Tab(
                 selected = tab == selected,
                 onClick = { onSelect(tab) },
-                text = { Text(if (tab == NotificationTab.News) "Báo" else "Server") },
+                text = { Text(if (tab == NotificationTab.News) "Tin tức xanh" else "Thông báo") },
                 selectedContentColor = MaterialTheme.colorScheme.primary,
                 unselectedContentColor = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -139,6 +159,7 @@ private fun NewsList(
                     .padding(16.dp),
                 color = MaterialTheme.colorScheme.error
             )
+
             else -> LazyColumn(
                 contentPadding = PaddingValues(12.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -210,7 +231,8 @@ private fun NewsCard(news: NewsDto) {
 @Composable
 private fun ServerNotificationList(
     notifications: List<ServerNotification>,
-    onClear: () -> Unit
+    onClear: () -> Unit,
+    onNotificationClick: (ServerNotification) -> Unit
 ) {
     Box(
         modifier = Modifier
@@ -254,12 +276,15 @@ private fun ServerNotificationList(
                             style = MaterialTheme.typography.titleMedium
                         )
                         TextButton(onClick = onClear) {
-                            Text(text = "Xóa tất cả")
+                            Text(text = "Xóa tất cả", color = Color.Red)
                         }
                     }
                 }
                 items(notifications, key = { it.id }) { item ->
-                    ServerNotificationCard(item)
+                    ServerNotificationCard(
+                        notification = item,
+                        onClick = { onNotificationClick(item) }
+                    )
                 }
             }
         }
@@ -267,18 +292,26 @@ private fun ServerNotificationList(
 }
 
 @Composable
-private fun ServerNotificationCard(notification: ServerNotification) {
+private fun ServerNotificationCard(
+    notification: ServerNotification,
+    onClick: () -> Unit,
+) {
     val receivedAt = remember(notification.receivedAt) {
         val formatter = SimpleDateFormat("HH:mm dd/MM", Locale.getDefault())
         formatter.format(Date(notification.receivedAt))
     }
 
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
-        Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Column(
+            modifier = Modifier.padding(12.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
             Text(
                 text = notification.title,
                 style = MaterialTheme.typography.titleMedium,
@@ -288,7 +321,7 @@ private fun ServerNotificationCard(notification: ServerNotification) {
             Text(
                 text = notification.body,
                 style = MaterialTheme.typography.bodyMedium,
-                maxLines = 4,
+                maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
             Row(
@@ -301,13 +334,68 @@ private fun ServerNotificationCard(notification: ServerNotification) {
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-                notification.source?.let {
-                    Text(
-                        text = it,
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.primary
-                    )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun NotificationDetailScreen(
+    notification: ServerNotification,
+    onBack: () -> Unit,
+) {
+    BackHandler(onBack = onBack)
+
+    val receivedAt = remember(notification.receivedAt) {
+        val formatter = SimpleDateFormat("HH:mm dd/MM", Locale.getDefault())
+        formatter.format(Date(notification.receivedAt))
+    }
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(text = "Chi tiết thông báo") },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(Icons.Filled.ArrowBack, contentDescription = "Quay lại")
+                    }
                 }
+            )
+        }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .padding(paddingValues)
+                .padding(16.dp)
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Text(
+                text = notification.title,
+                style = MaterialTheme.typography.titleLarge
+            )
+            Text(
+                text = notification.body,
+                style = MaterialTheme.typography.bodyLarge
+            )
+            if (!notification.deeplink.isNullOrBlank()) {
+                Text(
+                    text = "Link: ${notification.deeplink}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+            Text(
+                text = "Nhận lúc: $receivedAt",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            TextButton(
+                onClick = onBack,
+                modifier = Modifier.align(Alignment.End)
+            ) {
+                Text("Đóng")
             }
         }
     }

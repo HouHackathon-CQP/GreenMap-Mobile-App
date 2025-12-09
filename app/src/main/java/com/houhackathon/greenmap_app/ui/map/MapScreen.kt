@@ -15,6 +15,9 @@
 
 package com.houhackathon.greenmap_app.ui.map
 
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -201,7 +204,8 @@ fun MapScreen(
         MarkerInfoSheet(
             info = info,
             onDismiss = { selectedMarkerInfo = null },
-            sheetState = sheetState
+            sheetState = sheetState,
+            showDirections = viewState.isDirectionEnabled
         )
     }
 }
@@ -211,13 +215,15 @@ fun MapScreen(
 private fun MarkerInfoSheet(
     info: MarkerInfo,
     onDismiss: () -> Unit,
-    sheetState: SheetState
+    sheetState: SheetState,
+    showDirections: Boolean
 ) {
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
         shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
     ) {
+        val context = LocalContext.current
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -264,6 +270,22 @@ private fun MarkerInfoSheet(
             }
 
             Divider(modifier = Modifier.padding(vertical = 8.dp))
+            if (showDirections) {
+                Button(
+                    onClick = {
+                        openGoogleMapsDirections(
+                            context = context,
+                            lat = info.lat,
+                            lon = info.lon,
+                            label = info.title
+                        )
+                        onDismiss()
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Chỉ đường với Google Maps")
+                }
+            }
             Button(
                 onClick = onDismiss,
                 modifier = Modifier.fillMaxWidth()
@@ -345,3 +367,33 @@ private val mapLayerSetSaver = listSaver<Set<MapLayer>, String>(
 
 private fun toggleLayer(current: Set<MapLayer>, layer: MapLayer): Set<MapLayer> =
     if (current.contains(layer)) current - layer else current + layer
+
+private fun openGoogleMapsDirections(
+    context: Context,
+    lat: Double,
+    lon: Double,
+    label: String?,
+) {
+    val gmmIntentUri = Uri.parse("google.navigation:q=$lat,$lon")
+    val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri).apply {
+        setPackage("com.google.android.apps.maps")
+        label?.let { putExtra("android.intent.extra.TITLE", it) }
+    }
+    try {
+        if (mapIntent.resolveActivity(context.packageManager) != null) {
+            context.startActivity(mapIntent)
+            return
+        }
+    } catch (_: Exception) {
+        // ignore and try fallback
+    }
+
+    val fallbackUri =
+        Uri.parse("https://www.google.com/maps/dir/?api=1&destination=$lat,$lon&travelmode=driving")
+    val fallbackIntent = Intent(Intent.ACTION_VIEW, fallbackUri)
+    try {
+        context.startActivity(fallbackIntent)
+    } catch (_: Exception) {
+        // User has no maps-capable app; ignore.
+    }
+}
