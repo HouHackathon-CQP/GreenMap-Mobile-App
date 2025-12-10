@@ -41,8 +41,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
-import com.houhackathon.greenmap_app.domain.model.AiProvider
-import com.houhackathon.greenmap_app.ui.home.components.AiInsightCard
 import com.houhackathon.greenmap_app.ui.home.components.CurrentWeatherLarge
 import com.houhackathon.greenmap_app.ui.home.components.DailyForecastList
 import com.houhackathon.greenmap_app.ui.home.components.ForecastCardContainer
@@ -57,8 +55,6 @@ fun HomeScreen(
     viewState: HomeViewState,
     onRequestLocation: () -> Unit,
     onRefreshForecast: () -> Unit,
-    onAnalyzeWithAi: (Boolean) -> Unit,
-    onSelectAiProvider: (AiProvider) -> Unit,
     onNavigateMap: () -> Unit,
 ) {
     val context = LocalContext.current
@@ -129,18 +125,7 @@ fun HomeScreen(
                 )
 
                 QuickActionsRow(
-                    onRefreshForecast = onRefreshForecast,
-                    onAnalyzeAi = { onAnalyzeWithAi(false) }
-                )
-
-                AiInsightCard(
-                    provider = viewState.selectedAiProvider,
-                    model = viewState.aiModel,
-                    analysis = viewState.aiAnalysis,
-                    isLoading = viewState.isAiLoading,
-                    error = viewState.aiError,
-                    onProviderSelected = onSelectAiProvider,
-                    onAnalyzeClick = { onAnalyzeWithAi(true) }
+                    onRefreshForecast = onRefreshForecast
                 )
 
                 CurrentWeatherLarge(

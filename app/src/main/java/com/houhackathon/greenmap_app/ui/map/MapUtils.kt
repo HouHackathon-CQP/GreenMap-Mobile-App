@@ -20,13 +20,6 @@ import android.content.Context
 import android.content.pm.PackageManager
 import androidx.core.content.ContextCompat
 import com.houhackathon.greenmap_app.BuildConfig
-import com.houhackathon.greenmap_app.R
-import com.houhackathon.greenmap_app.domain.model.LocationType
-import com.houhackathon.greenmap_app.ui.theme.BikeAmber
-import com.houhackathon.greenmap_app.ui.theme.ChargeMint
-import com.houhackathon.greenmap_app.ui.theme.ParkGreen
-import com.houhackathon.greenmap_app.ui.theme.TourismCoral
-import org.maplibre.android.annotations.Icon
 import org.maplibre.android.geometry.LatLng
 import org.maplibre.android.geometry.LatLngBounds
 import org.maplibre.android.location.LocationComponentActivationOptions
@@ -35,7 +28,6 @@ import org.maplibre.android.location.modes.RenderMode
 import org.maplibre.android.maps.MapLibreMap
 import org.maplibre.android.maps.MapView
 import org.maplibre.android.camera.CameraPosition
-import toMapLibreIcon
 
 private const val MAPLIBRE_DEMO_STYLE = "https://demotiles.maplibre.org/style.json"
 
@@ -105,10 +97,3 @@ fun hasLocationPermission(context: Context): Boolean =
 private fun buildStyleUrl(apiKey: String): String =
     if (apiKey.isBlank()) MAPLIBRE_DEMO_STYLE
     else "https://api.maptiler.com/maps/streets-v2/style.json?key=$apiKey"
-
-fun buildPoiIconMap(context: Context): Map<LocationType, Icon> = mapOf(
-    LocationType.PUBLIC_PARK to context.toMapLibreIcon(R.drawable.ic_park, ParkGreen),
-    LocationType.CHARGING_STATION to context.toMapLibreIcon(R.drawable.ic_ev, ChargeMint),
-    LocationType.BICYCLE_RENTAL to context.toMapLibreIcon(R.drawable.ic_bike, BikeAmber),
-    LocationType.TOURIST_ATTRACTION to context.toMapLibreIcon(R.drawable.ic_tour, TourismCoral),
-)

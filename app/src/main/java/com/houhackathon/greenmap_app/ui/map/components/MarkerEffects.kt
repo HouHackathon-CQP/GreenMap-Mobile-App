@@ -18,10 +18,12 @@ package com.houhackathon.greenmap_app.ui.map.components
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import com.houhackathon.greenmap_app.domain.model.LocationType
+import com.houhackathon.greenmap_app.ui.map.AqiIconFactory
 import com.houhackathon.greenmap_app.ui.map.AqiStationMarker
 import com.houhackathon.greenmap_app.ui.map.LocationPoiMarker
 import com.houhackathon.greenmap_app.ui.map.MapLayer
 import com.houhackathon.greenmap_app.ui.map.MarkerInfo
+import com.houhackathon.greenmap_app.ui.map.WeatherIconFactory
 import com.houhackathon.greenmap_app.ui.map.WeatherStationMarker
 import org.maplibre.android.annotations.Icon
 import org.maplibre.android.annotations.Marker
@@ -34,11 +36,12 @@ fun WeatherMarkersEffect(
     weatherStations: List<WeatherStationMarker>,
     mapLibreMap: MapLibreMap?,
     markers: MutableList<Marker>,
+    weatherIconFactory: WeatherIconFactory,
     selectedLayers: Set<MapLayer>,
     markerInfoMap: MutableMap<Marker, MarkerInfo>,
     refreshKey: Int,
 ) {
-    LaunchedEffect(weatherStations, mapLibreMap, selectedLayers, refreshKey) {
+    LaunchedEffect(weatherStations, mapLibreMap, selectedLayers, refreshKey, weatherIconFactory) {
         val map = mapLibreMap ?: return@LaunchedEffect
         val enabled = selectedLayers.contains(MapLayer.WEATHER)
         markers.forEach {
@@ -58,6 +61,7 @@ fun WeatherMarkersEffect(
                             station.temperature?.let { "${"%.1f".format(it)}°C" }
                         ).joinToString(" • ")
                     )
+                    .icon(weatherIconFactory.iconFor(station.weatherType, station.temperature))
             )
             markers.add(marker)
             markerInfoMap[marker] = MarkerInfo(
@@ -77,7 +81,7 @@ fun AqiMarkersEffect(
     aqiStations: List<AqiStationMarker>,
     mapLibreMap: MapLibreMap?,
     markers: MutableList<Marker>,
-    aqiIcon: Icon?,
+    aqiIconFactory: AqiIconFactory,
     selectedLayers: Set<MapLayer>,
     markerInfoMap: MutableMap<Marker, MarkerInfo>,
     refreshKey: Int,
@@ -97,7 +101,7 @@ fun AqiMarkersEffect(
                     .position(LatLng(station.lat, station.lon))
                     .title(station.name)
                     .snippet(buildAqiSnippet(station))
-                    .icon(aqiIcon)
+                    .icon(aqiIconFactory.iconFor(station.aqi, station.aqiCategory))
             )
             markers.add(marker)
             markerInfoMap[marker] = MarkerInfo(
@@ -117,7 +121,7 @@ fun PoiMarkersEffect(
     poiStations: List<LocationPoiMarker>,
     mapLibreMap: MapLibreMap?,
     markers: MutableMap<LocationType, MutableList<Marker>>,
-    iconMap: Map<LocationType, Icon>,
+    iconProvider: (LocationType) -> Icon,
     selectedLayers: Set<MapLayer>,
     markerInfoMap: MutableMap<Marker, MarkerInfo>,
     refreshKey: Int,
@@ -151,7 +155,7 @@ fun PoiMarkersEffect(
                         .position(LatLng(station.lat, station.lon))
                         .title(station.name)
                         .snippet(buildPoiSnippet(station))
-                        .icon(iconMap[station.type])
+                        .icon(iconProvider(station.type))
                 )
                 markers[type]?.add(marker)
                 markerInfoMap[marker] = MarkerInfo(

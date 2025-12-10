@@ -37,7 +37,7 @@ fun DirectionOverlayEffect(
     mapLibreMap: MapLibreMap?,
     store: DirectionStore,
     markerInfoMap: MutableMap<Marker, MarkerInfo>,
-    poiIcons: Map<LocationType, Icon>,
+    poiIconProvider: (LocationType) -> Icon?,
     refreshKey: Int,
 ) {
     LaunchedEffect(directionPlan, mapLibreMap, refreshKey) {
@@ -87,7 +87,7 @@ fun DirectionOverlayEffect(
 
         plan.viaPois.forEach { poi ->
             val icon = poi.type?.let { typeName ->
-                LocationType.fromRaw(typeName)?.let { poiIcons[it] }
+                LocationType.fromRaw(typeName)?.let { poiIconProvider(it) }
             }
             val marker = map.addMarker(
                 MarkerOptions()

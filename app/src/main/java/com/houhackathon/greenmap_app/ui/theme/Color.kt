@@ -34,3 +34,23 @@ val ParkGreen = Color(0xFF2E7D32)
 val ChargeMint = Color(0xFF009688)
 val BikeAmber = Color(0xFFF9A825)
 val TourismCoral = Color(0xFFEF6C6C)
+
+// AQI severity scale
+val AqiGood = Color(0xFF2E7D32)
+val AqiModerate = Color(0xFFFBC02D)
+val AqiUnhealthySensitive = Color(0xFFFB8C00)
+val AqiUnhealthy = Color(0xFFD32F2F)
+val AqiVeryUnhealthy = Color(0xFF8E24AA)
+val AqiHazardous = Color(0xFF6D4C41)
+val AqiVeryHazardous = Color(0xFF4A148C)
+val AqiUnknown = Color(0xFF9E9E9E)
+
+// Weather icon accents
+val WeatherSunny = Color(0xFFFFC107)
+val WeatherCloudy = Color(0xFF64B5F6)
+val WeatherRainy = Color(0xFF1E88E5)
+val WeatherStorm = Color(0xFF3949AB)
+val WeatherFog = Color(0xFF90A4AE)
+val WeatherSnow = Color(0xFF81D4FA)
+val WeatherOvercast = Color(0xFF546E7A)
+val WeatherUnknown = Color(0xFF9E9E9E)

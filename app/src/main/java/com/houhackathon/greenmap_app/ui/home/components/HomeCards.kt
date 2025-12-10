@@ -95,7 +95,6 @@ fun LocationPill(
 @Composable
 fun QuickActionsRow(
     onRefreshForecast: () -> Unit,
-    onAnalyzeAi: () -> Unit,
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -104,11 +103,6 @@ fun QuickActionsRow(
         GreenGhostButton(
             text = stringResource(id = R.string.btn_refresh),
             onClick = onRefreshForecast,
-            modifier = Modifier.weight(1f)
-        )
-        GreenButton(
-            text = stringResource(id = R.string.ai_action_analyze),
-            onClick = onAnalyzeAi,
             modifier = Modifier.weight(1f)
         )
     }

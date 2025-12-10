@@ -63,10 +63,6 @@ fun EntryProviderScope<NavKey>.featureASection(
             viewState = viewState,
             onRequestLocation = { viewModel.processIntent(HomeIntent.UseCurrentLocation) },
             onRefreshForecast = { viewModel.processIntent(HomeIntent.RefreshForecast) },
-            onAnalyzeWithAi = { force ->
-                viewModel.processIntent(HomeIntent.AnalyzeWeatherWithAi(forceRefresh = force))
-            },
-            onSelectAiProvider = { provider -> viewModel.processIntent(HomeIntent.SelectAiProvider(provider)) },
             onNavigateMap = { viewModel.processIntent(HomeIntent.NavigateToMap) }
         )
 

@@ -34,8 +34,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Build
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.Button
@@ -87,10 +85,8 @@ import com.houhackathon.greenmap_app.ui.map.components.MapLifecycleHandler
 import com.houhackathon.greenmap_app.ui.map.components.PoiMarkersEffect
 import com.houhackathon.greenmap_app.ui.map.components.WeatherMarkersEffect
 import com.houhackathon.greenmap_app.ui.theme.Charcoal
-import com.houhackathon.greenmap_app.ui.theme.Leaf700
 import org.maplibre.android.annotations.Icon
 import org.maplibre.android.maps.MapLibreMap
-import toMapLibreIcon
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -109,13 +105,12 @@ fun MapScreen(
     val weatherMarkers = markerStore.weatherMarkers
     val aqiMarkers = markerStore.aqiMarkers
     val poiMarkers = markerStore.poiMarkers
-    val aqiIcon = remember {
-        context.toMapLibreIcon(
-            R.drawable.ic_aqi,
-            Leaf700
-        )
+    val aqiIconFactory = remember { AqiIconFactory(context) }
+    val weatherIconFactory = remember { WeatherIconFactory(context) }
+    val poiIconFactory = remember { PoiIconFactory(context) }
+    val poiIconResolver = remember(poiIconOverrides, poiIconFactory) {
+        { type: LocationType -> poiIconOverrides?.get(type) ?: poiIconFactory.iconFor(type) }
     }
-    val poiIcons = remember(poiIconOverrides) { poiIconOverrides ?: buildPoiIconMap(context) }
     val directionStore = remember { MapViewHolder.directionStore }
     var selectedLayers by rememberSaveable(stateSaver = mapLayerSetSaver) {
         mutableStateOf(defaultSelectedLayers)
@@ -165,6 +160,7 @@ fun MapScreen(
         weatherStations = viewState.weatherStations,
         mapLibreMap = mapLibreMap,
         markers = weatherMarkers,
+        weatherIconFactory = weatherIconFactory,
         selectedLayers = selectedLayers,
         markerInfoMap = markerInfoMap,
         refreshKey = markerRefreshVersion
@@ -173,7 +169,7 @@ fun MapScreen(
         aqiStations = viewState.aqiStations,
         mapLibreMap = mapLibreMap,
         markers = aqiMarkers,
-        aqiIcon = aqiIcon,
+        aqiIconFactory = aqiIconFactory,
         selectedLayers = selectedLayers,
         markerInfoMap = markerInfoMap,
         refreshKey = markerRefreshVersion
@@ -182,7 +178,7 @@ fun MapScreen(
         poiStations = viewState.poiStations,
         mapLibreMap = mapLibreMap,
         markers = poiMarkers,
-        iconMap = poiIcons,
+        iconProvider = poiIconResolver,
         selectedLayers = selectedLayers,
         markerInfoMap = markerInfoMap,
         refreshKey = markerRefreshVersion
@@ -192,7 +188,7 @@ fun MapScreen(
         mapLibreMap = mapLibreMap,
         store = directionStore,
         markerInfoMap = markerInfoMap,
-        poiIcons = poiIcons,
+        poiIconProvider = poiIconResolver,
         refreshKey = markerRefreshVersion
     )
     CameraFollowEffect(
@@ -318,23 +314,6 @@ private fun MarkerInfoSheet(
                 )
             }
 
-            Divider(modifier = Modifier.padding(vertical = 8.dp))
-            if (showDirections) {
-                Button(
-                    onClick = {
-                        openGoogleMapsDirections(
-                            context = context,
-                            lat = info.lat,
-                            lon = info.lon,
-                            label = info.title
-                        )
-                        onDismiss()
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("Chỉ đường với Google Maps")
-                }
-            }
             Button(
                 onClick = onDismiss,
                 modifier = Modifier.fillMaxWidth()
@@ -666,32 +645,12 @@ private val mapLayerSetSaver = listSaver<Set<MapLayer>, String>(
 private fun toggleLayer(current: Set<MapLayer>, layer: MapLayer): Set<MapLayer> =
     if (current.contains(layer)) current - layer else current + layer
 
+// Intentionally left for potential future use without UI surface.
 private fun openGoogleMapsDirections(
     context: Context,
     lat: Double,
     lon: Double,
     label: String?,
 ) {
-    val gmmIntentUri = Uri.parse("google.navigation:q=$lat,$lon")
-    val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri).apply {
-        setPackage("com.google.android.apps.maps")
-        label?.let { putExtra("android.intent.extra.TITLE", it) }
-    }
-    try {
-        if (mapIntent.resolveActivity(context.packageManager) != null) {
-            context.startActivity(mapIntent)
-            return
-        }
-    } catch (_: Exception) {
-        // ignore and try fallback
-    }
-
-    val fallbackUri =
-        Uri.parse("https://www.google.com/maps/dir/?api=1&destination=$lat,$lon&travelmode=driving")
-    val fallbackIntent = Intent(Intent.ACTION_VIEW, fallbackUri)
-    try {
-        context.startActivity(fallbackIntent)
-    } catch (_: Exception) {
-        // User has no maps-capable app; ignore.
-    }
+    // no-op: launcher removed from UI
 }

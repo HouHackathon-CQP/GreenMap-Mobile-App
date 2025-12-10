@@ -16,7 +16,6 @@
 package com.houhackathon.greenmap_app.ui.home
 
 import com.houhackathon.greenmap_app.data.remote.dto.WeatherForecastResponse
-import com.houhackathon.greenmap_app.domain.model.AiProvider
 import com.houhackathon.greenmap_app.core.mvi.MviIntent
 import com.houhackathon.greenmap_app.core.mvi.MviSingleEvent
 import com.houhackathon.greenmap_app.core.mvi.MviViewState
@@ -28,11 +27,6 @@ data class HomeViewState(
     val isLoading: Boolean = false,
     val error: String? = null,
     val forecast: WeatherForecastResponse? = null,
-    val selectedAiProvider: AiProvider = AiProvider.GEMINI,
-    val aiModel: String? = null,
-    val aiAnalysis: String? = null,
-    val isAiLoading: Boolean = false,
-    val aiError: String? = null,
 ) : MviViewState
 
 sealed class HomeIntent : MviIntent {
@@ -40,11 +34,6 @@ sealed class HomeIntent : MviIntent {
     data object LoadForecast : HomeIntent()
     data object RefreshForecast : HomeIntent()
     data object NavigateToMap : HomeIntent()
-    data class SelectAiProvider(val provider: AiProvider) : HomeIntent()
-    data class AnalyzeWeatherWithAi(
-        val provider: AiProvider? = null,
-        val forceRefresh: Boolean = false,
-    ) : HomeIntent()
 }
 
 sealed class HomeEvent : MviSingleEvent {

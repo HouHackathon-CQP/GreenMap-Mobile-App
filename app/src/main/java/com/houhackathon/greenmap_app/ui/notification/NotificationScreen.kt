@@ -28,13 +28,19 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -43,8 +49,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
+import androidx.compose.material3.TabRowDefaults
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -55,15 +64,23 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.houhackathon.greenmap_app.data.remote.dto.NewsDto
 import com.houhackathon.greenmap_app.domain.model.ServerNotification
+import com.houhackathon.greenmap_app.ui.theme.Leaf100
+import com.houhackathon.greenmap_app.ui.theme.Leaf200
+import com.houhackathon.greenmap_app.ui.theme.Leaf700
+import com.houhackathon.greenmap_app.ui.theme.Sand
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -91,26 +108,63 @@ fun NotificationScreen() {
             onBack = { viewModel.processIntent(NotificationIntent.DismissNotificationDetail) }
         )
     } else {
-        Column(modifier = Modifier.fillMaxSize()) {
-            NotificationTabs(
-                selected = viewState.selectedTab,
-                onSelect = { viewModel.processIntent(NotificationIntent.SelectTab(it)) }
-            )
-
-            when (viewState.selectedTab) {
-                NotificationTab.News -> NewsList(
-                    news = viewState.news,
-                    isLoading = viewState.isLoading,
-                    error = viewState.error,
-                    onRefresh = { viewModel.processIntent(NotificationIntent.LoadNews) }
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = Sand
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                Header()
+                NotificationTabs(
+                    selected = viewState.selectedTab,
+                    onSelect = { viewModel.processIntent(NotificationIntent.SelectTab(it)) }
                 )
-
-                NotificationTab.Server -> ServerNotificationList(
-                    notifications = viewState.serverNotifications,
-                    onClear = { viewModel.processIntent(NotificationIntent.ClearServerNotifications) },
-                    onNotificationClick = { viewModel.processIntent(NotificationIntent.ShowNotificationDetail(it)) }
-                )
+                when (viewState.selectedTab) {
+                    NotificationTab.News -> NewsList(
+                        news = viewState.news,
+                        isLoading = viewState.isLoading,
+                        error = viewState.error,
+                        onRefresh = { viewModel.processIntent(NotificationIntent.LoadNews) }
+                    )
+                    NotificationTab.Server -> ServerNotificationList(
+                        notifications = viewState.serverNotifications,
+                        onClear = { viewModel.processIntent(NotificationIntent.ClearServerNotifications) },
+                        onNotificationClick = { viewModel.processIntent(NotificationIntent.ShowNotificationDetail(it)) }
+                    )
+                }
             }
+        }
+    }
+}
+
+@Composable
+private fun Header() {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(18.dp))
+            .background(
+                Brush.linearGradient(
+                    listOf(Leaf100, Leaf200.copy(alpha = 0.9f), Color.White.copy(alpha = 0.85f))
+                )
+            )
+            .padding(horizontal = 16.dp, vertical = 12.dp)
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text(
+                text = "Green Pulse",
+                style = MaterialTheme.typography.titleLarge,
+                color = Leaf700
+            )
+            Text(
+                text = "Tin tức, cảnh báo và cập nhật từ Green Map",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
     }
 }
@@ -123,15 +177,23 @@ private fun NotificationTabs(
     val tabs = listOf(NotificationTab.News, NotificationTab.Server)
     TabRow(
         selectedTabIndex = tabs.indexOf(selected),
-        containerColor = MaterialTheme.colorScheme.surface,
-        contentColor = MaterialTheme.colorScheme.primary
+        containerColor = Color.Transparent,
+        contentColor = Leaf700,
+        indicator = { tabPositions ->
+            TabRowDefaults.Indicator(
+                Modifier
+                    .tabIndicatorOffset(tabPositions[tabs.indexOf(selected)])
+                    .padding(horizontal = 32.dp),
+                color = Leaf700
+            )
+        }
     ) {
         tabs.forEachIndexed { index, tab ->
             Tab(
                 selected = tab == selected,
                 onClick = { onSelect(tab) },
                 text = { Text(if (tab == NotificationTab.News) "Tin tức xanh" else "Thông báo") },
-                selectedContentColor = MaterialTheme.colorScheme.primary,
+                selectedContentColor = Leaf700,
                 unselectedContentColor = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
@@ -145,27 +207,58 @@ private fun NewsList(
     error: String?,
     onRefresh: () -> Unit
 ) {
-    Box(
+    Surface(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f))
+            .clip(RoundedCornerShape(16.dp)),
+        color = Color.White.copy(alpha = 0.82f),
+        tonalElevation = 1.dp,
+        shadowElevation = 2.dp
     ) {
-        when {
-            isLoading -> CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-            error != null -> Text(
-                text = error,
+        Column(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            Row(
                 modifier = Modifier
-                    .align(Alignment.Center)
-                    .padding(16.dp),
-                color = MaterialTheme.colorScheme.error
-            )
-
-            else -> LazyColumn(
-                contentPadding = PaddingValues(12.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp, vertical = 10.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                items(news, key = { it.link ?: it.title ?: it.hashCode().toString() }) { item ->
-                    NewsCard(item)
+                Text(
+                    text = "Tin tức xanh",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = Leaf700
+                )
+                TextButton(onClick = onRefresh, contentPadding = PaddingValues(horizontal = 10.dp)) {
+                    Icon(Icons.Filled.Refresh, contentDescription = null, tint = Leaf700, modifier = Modifier.height(18.dp))
+                    Text(text = "Tải lại", color = Leaf700, modifier = Modifier.padding(start = 6.dp))
+                }
+            }
+
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(bottom = 6.dp)
+            ) {
+                when {
+                    isLoading -> CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                    error != null -> Text(
+                        text = error,
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .padding(16.dp),
+                        color = MaterialTheme.colorScheme.error
+                    )
+
+                    else -> LazyColumn(
+                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        items(news, key = { it.link ?: it.title ?: it.hashCode().toString() }) { item ->
+                            NewsCard(item)
+                        }
+                    }
                 }
             }
         }
@@ -186,9 +279,10 @@ private fun NewsCard(news: NewsDto) {
             }
             .padding(vertical = 2.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
+            containerColor = Color.White
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
             if (!news.imageUrl.isNullOrBlank()) {
@@ -208,12 +302,17 @@ private fun NewsCard(news: NewsDto) {
                 overflow = TextOverflow.Ellipsis
             )
             if (!news.publishedAt.isNullOrBlank() || !news.source.isNullOrBlank()) {
-                Text(
-                    text = listOfNotNull(news.source, news.publishedAt).joinToString(" • "),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(top = 4.dp)
-                )
+                Row(
+                    modifier = Modifier.padding(top = 6.dp),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    news.source?.takeIf { it.isNotBlank() }?.let {
+                        InfoChip(text = it, icon = Icons.Filled.Notifications)
+                    }
+                    news.publishedAt?.takeIf { it.isNotBlank() }?.let {
+                        InfoChip(text = it, icon = Icons.Filled.DateRange)
+                    }
+                }
             }
             if (!news.description.isNullOrBlank()) {
                 Text(
@@ -229,20 +328,54 @@ private fun NewsCard(news: NewsDto) {
 }
 
 @Composable
+private fun InfoChip(text: String, icon: ImageVector? = null) {
+    Surface(
+        color = Leaf100,
+        shape = RoundedCornerShape(50),
+        tonalElevation = 0.dp,
+        shadowElevation = 0.dp
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(horizontal = 10.dp, vertical = 6.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            icon?.let {
+                Icon(
+                    imageVector = it,
+                    contentDescription = null,
+                    tint = Leaf700,
+                    modifier = Modifier.height(16.dp)
+                )
+            }
+            Text(
+                text = text,
+                style = MaterialTheme.typography.labelMedium,
+                color = Leaf700
+            )
+        }
+    }
+}
+
+@Composable
 private fun ServerNotificationList(
     notifications: List<ServerNotification>,
     onClear: () -> Unit,
     onNotificationClick: (ServerNotification) -> Unit
 ) {
-    Box(
+    Surface(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.12f))
+            .clip(RoundedCornerShape(16.dp)),
+        color = Color.White.copy(alpha = 0.82f),
+        tonalElevation = 1.dp,
+        shadowElevation = 2.dp
     ) {
         if (notifications.isEmpty()) {
             Column(
                 modifier = Modifier
-                    .align(Alignment.Center)
+//                    .align(Alignment.Center)
                     .padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -259,32 +392,41 @@ private fun ServerNotificationList(
                 )
             }
         } else {
-            LazyColumn(
-                contentPadding = PaddingValues(12.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+            Column(
+                modifier = Modifier.fillMaxSize()
             ) {
-                item {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 4.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "Thông báo từ server",
-                            style = MaterialTheme.typography.titleMedium
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 12.dp, vertical = 10.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Thông báo từ server",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = Leaf700
+                    )
+                    TextButton(onClick = onClear, contentPadding = PaddingValues(horizontal = 10.dp)) {
+                        Icon(
+                            painter = painterResource(id = android.R.drawable.ic_menu_delete),
+                            contentDescription = null,
+                            tint = Color.Red,
+                            modifier = Modifier.height(18.dp)
                         )
-                        TextButton(onClick = onClear) {
-                            Text(text = "Xóa tất cả", color = Color.Red)
-                        }
+                        Text(text = "Xóa tất cả", color = Color.Red, modifier = Modifier.padding(start = 6.dp))
                     }
                 }
-                items(notifications, key = { it.id }) { item ->
-                    ServerNotificationCard(
-                        notification = item,
-                        onClick = { onNotificationClick(item) }
-                    )
+                LazyColumn(
+                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items(notifications, key = { it.id }) { item ->
+                        ServerNotificationCard(
+                            notification = item,
+                            onClick = { onNotificationClick(item) }
+                        )
+                    }
                 }
             }
         }
@@ -305,8 +447,9 @@ private fun ServerNotificationCard(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        shape = RoundedCornerShape(14.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
     ) {
         Column(
             modifier = Modifier.padding(12.dp),
@@ -324,6 +467,7 @@ private fun ServerNotificationCard(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
+            InfoChip(text = "Server", icon = Icons.Filled.Notifications)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -334,6 +478,30 @@ private fun ServerNotificationCard(
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+                Surface(
+                    color = Leaf100,
+                    shape = CircleShape,
+                    modifier = Modifier.height(28.dp)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .padding(horizontal = 10.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Icon(
+                            painter = painterResource(id = android.R.drawable.ic_dialog_info),
+                            contentDescription = null,
+                            tint = Leaf700,
+                            modifier = Modifier.height(16.dp)
+                        )
+                        Text(
+                            text = "Alert",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = Leaf700
+                        )
+                    }
+                }
             }
         }
     }
