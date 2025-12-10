@@ -18,6 +18,8 @@ package com.houhackathon.greenmap_app.ui.map
 import com.houhackathon.greenmap_app.core.mvi.MviIntent
 import com.houhackathon.greenmap_app.core.mvi.MviSingleEvent
 import com.houhackathon.greenmap_app.core.mvi.MviViewState
+import com.houhackathon.greenmap_app.domain.model.DirectionPlan
+import com.houhackathon.greenmap_app.domain.model.GeoPoint
 import com.houhackathon.greenmap_app.domain.model.LocationType
 
 data class MapViewState(
@@ -27,6 +29,14 @@ data class MapViewState(
     val aqiStations: List<AqiStationMarker> = emptyList(),
     val poiStations: List<LocationPoiMarker> = emptyList(),
     val isDirectionEnabled: Boolean = false,
+    val directionQuery: String = "",
+    val directionPlan: DirectionPlan? = null,
+    val isDirectionLoading: Boolean = false,
+    val directionError: String? = null,
+    val currentLocation: GeoPoint? = null,
+    val currentBearing: Float? = null,
+    val remainingDistance: Double? = null,
+    val remainingDuration: Double? = null,
 ) : MviViewState
 
 data class MarkerInfo(
@@ -71,6 +81,11 @@ data class LocationPoiMarker(
 sealed class MapIntent : MviIntent {
     data object LoadStations : MapIntent()
     data object RefreshStations : MapIntent()
+    data class UpdateDirectionQuery(val value: String) : MapIntent()
+    data class FindDirections(val question: String) : MapIntent()
+    data object ClearDirections : MapIntent()
+    data object StartLocationUpdates : MapIntent()
+    data object StopLocationUpdates : MapIntent()
 }
 
 sealed class MapEvent : MviSingleEvent {

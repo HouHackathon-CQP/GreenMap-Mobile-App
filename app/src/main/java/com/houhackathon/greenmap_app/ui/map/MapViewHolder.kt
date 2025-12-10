@@ -18,6 +18,7 @@ package com.houhackathon.greenmap_app.ui.map
 import android.content.Context
 import com.houhackathon.greenmap_app.domain.model.LocationType
 import org.maplibre.android.annotations.Marker
+import org.maplibre.android.annotations.Polyline
 import org.maplibre.android.maps.MapLibreMap
 import org.maplibre.android.maps.MapView
 
@@ -25,6 +26,7 @@ object MapViewHolder {
     private var mapView: MapView? = null
     private var initialized: Boolean = false
     val markerStore: MarkerStore = MarkerStore()
+    val directionStore: DirectionStore = DirectionStore()
 
     fun getOrCreate(context: Context): MapView {
         val current = mapView
@@ -42,11 +44,15 @@ object MapViewHolder {
     }
 
     fun destroy() {
-        mapView?.getMapAsync { markerStore.clear(it) }
+        mapView?.getMapAsync {
+            markerStore.clear(it)
+            directionStore.clear(it, markerStore.markerInfoMap)
+        }
         mapView?.onDestroy()
         mapView = null
         initialized = false
         markerStore.clear()
+        directionStore.clear(markerInfoMap = markerStore.markerInfoMap)
     }
 }
 
@@ -67,5 +73,40 @@ class MarkerStore(
         aqiMarkers.clear()
         poiMarkers.clear()
         markerInfoMap.clear()
+    }
+}
+
+class DirectionStore(
+    var routeLine: Polyline? = null,
+    var startMarker: Marker? = null,
+    var destinationMarker: Marker? = null,
+    val viaMarkers: MutableList<Marker> = mutableListOf(),
+) {
+    fun clear(
+        mapLibreMap: MapLibreMap? = null,
+        markerInfoMap: MutableMap<Marker, MarkerInfo>? = null
+    ) {
+        val map = mapLibreMap
+        if (map != null) {
+            routeLine?.let {
+                map.removeAnnotation(it)
+            }
+            startMarker?.let {
+                map.removeAnnotation(it)
+                markerInfoMap?.remove(it)
+            }
+            destinationMarker?.let {
+                map.removeAnnotation(it)
+                markerInfoMap?.remove(it)
+            }
+            viaMarkers.forEach {
+                map.removeAnnotation(it)
+                markerInfoMap?.remove(it)
+            }
+        }
+        routeLine = null
+        startMarker = null
+        destinationMarker = null
+        viaMarkers.clear()
     }
 }

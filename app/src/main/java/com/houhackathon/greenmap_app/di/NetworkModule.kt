@@ -16,8 +16,10 @@
 package com.houhackathon.greenmap_app.di
 
 import com.houhackathon.greenmap_app.BuildConfig
+import com.houhackathon.greenmap_app.core.datastore.UserPreferences
 import com.houhackathon.greenmap_app.core.network.NetworkConfig
 import com.houhackathon.greenmap_app.data.remote.api.ApiService
+import com.houhackathon.greenmap_app.data.remote.api.OsrmService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -29,6 +31,9 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
+import javax.inject.Named
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -46,15 +51,22 @@ object NetworkModule {
     @Singleton
     fun provideOkHttpClient(
         loggingInterceptor: Interceptor,
+        userPreferences: UserPreferences,
     ): OkHttpClient {
         return OkHttpClient.Builder()
             .connectTimeout(NetworkConfig.DEFAULT_TIMEOUT_SECONDS, TimeUnit.SECONDS)
             .readTimeout(NetworkConfig.DEFAULT_TIMEOUT_SECONDS, TimeUnit.SECONDS)
             .writeTimeout(NetworkConfig.DEFAULT_TIMEOUT_SECONDS, TimeUnit.SECONDS)
             .addInterceptor { chain ->
+                val token = runBlocking { userPreferences.userInfoFlow.first().token }
                 val request = chain.request()
                     .newBuilder()
                     .header("Accept", "application/json")
+                    .apply {
+                        if (!token.isNullOrBlank()) {
+                            header("Authorization", "Bearer $token")
+                        }
+                    }
                     .build()
                 chain.proceed(request)
             }
@@ -75,4 +87,22 @@ object NetworkModule {
     @Provides
     @Singleton
     fun provideApiService(retrofit: Retrofit): ApiService = retrofit.create(ApiService::class.java)
+
+    @Provides
+    @Singleton
+    @Named("osrm")
+    fun provideOsrmRetrofit(
+        okHttpClient: OkHttpClient
+    ): Retrofit {
+        return Retrofit.Builder()
+            .baseUrl("https://router.project-osrm.org/")
+            .client(okHttpClient)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+    }
+
+    @Provides
+    @Singleton
+    fun provideOsrmService(@Named("osrm") retrofit: Retrofit): OsrmService =
+        retrofit.create(OsrmService::class.java)
 }

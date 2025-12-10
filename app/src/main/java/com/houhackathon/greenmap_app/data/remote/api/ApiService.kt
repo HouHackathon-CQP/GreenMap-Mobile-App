@@ -24,6 +24,8 @@ import com.houhackathon.greenmap_app.data.remote.dto.LoginResponse
 import com.houhackathon.greenmap_app.data.remote.dto.NewsDto
 import com.houhackathon.greenmap_app.data.remote.dto.RegisterNotificationRequest
 import com.houhackathon.greenmap_app.data.remote.dto.RegisterNotificationResponse
+import com.houhackathon.greenmap_app.data.remote.dto.DirectionsRequest
+import com.houhackathon.greenmap_app.data.remote.dto.DirectionsResponse
 import com.houhackathon.greenmap_app.data.remote.dto.WeatherForecastResponse
 import com.houhackathon.greenmap_app.data.remote.dto.WeatherHanoiResponse
 import retrofit2.Response
@@ -83,4 +85,9 @@ interface ApiService {
         @Query("lat") lat: Double? = null,
         @Query("lon") lon: Double? = null,
     ): Response<AiWeatherInsightResponse>
+
+    @POST("ai/directions")
+    suspend fun getDirections(
+        @Body body: DirectionsRequest,
+    ): Response<DirectionsResponse>
 }

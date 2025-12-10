@@ -33,7 +33,7 @@ class AiInsightCacheRepositoryImpl @Inject constructor(
         lon: Double,
         maxAgeMillis: Long,
     ): AiInsightCache? {
-        val entity = dao.getInsight(provider.queryName, lat, lon) ?: return null
+        val entity = dao.getInsight(provider.queryName, lat.toDouble(), lon.toDouble()) ?: return null
         val now = System.currentTimeMillis()
         val isFresh = now - entity.updatedAt <= maxAgeMillis
         return if (isFresh) entity.toDomain(provider) else null
