@@ -64,7 +64,9 @@ fun WeatherMarkersEffect(
                 title = station.name,
                 subtitle = station.weatherType,
                 description = station.temperature?.let { "Nhiệt độ ${"%.1f".format(it)}°C" },
-                category = "Thời tiết"
+                category = "Thời tiết",
+                lat = station.lat,
+                lon = station.lon
             )
         }
     }
@@ -102,7 +104,9 @@ fun AqiMarkersEffect(
                 title = station.name,
                 subtitle = buildAqiSnippet(station),
                 description = station.aqiCategory?.label,
-                category = "AQI"
+                category = "AQI",
+                lat = station.lat,
+                lon = station.lon
             )
         }
     }
@@ -154,7 +158,9 @@ fun PoiMarkersEffect(
                     title = station.name,
                     subtitle = station.type.displayName,
                     description = station.description ?: station.dataSource,
-                    category = "POI"
+                    category = "POI",
+                    lat = station.lat,
+                    lon = station.lon
                 )
             }
         }

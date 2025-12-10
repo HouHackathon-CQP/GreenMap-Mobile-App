@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">GreenMap-App</string>
+    <string name="app_name">GreenMap</string>
     <string name="title_home">Home</string>
     <string name="title_news">News</string>
     <string name="title_settings">Settings</string>
@@ -56,5 +56,11 @@
     <string name="ai_provider_grog">Groq</string>
     <string name="ai_loading">Đang tạo báo cáo AI...</string>
     <string name="ai_model_label">Mô hình</string>
+    <string name="direction_query_required">Vui lòng nhập câu hỏi chỉ đường.</string>
+    <string name="direction_location_unavailable">Không lấy được vị trí hiện tại để hỏi đường.</string>
+    <string name="direction_missing_route">API không trả về tuyến đường hoặc toạ độ.</string>
+    <string name="direction_error_generic">Không lấy được gợi ý chỉ đường, thử lại sau.</string>
+    <string name="direction_loading">Đang vẽ tuyến đường...</string>
+    <string name="direction_placeholder">Ví dụ: \"đường đến Đại học Bách khoa Hà Nội\"</string>
 
 </resources>

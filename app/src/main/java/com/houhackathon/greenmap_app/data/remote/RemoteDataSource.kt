@@ -17,15 +17,20 @@ package com.houhackathon.greenmap_app.data.remote
 
 import com.houhackathon.greenmap_app.core.network.safeApiCall
 import com.houhackathon.greenmap_app.data.remote.api.ApiService
+import com.houhackathon.greenmap_app.data.remote.api.OsrmService
 import com.houhackathon.greenmap_app.data.remote.dto.ApiStatusResponse
 import com.houhackathon.greenmap_app.data.remote.dto.LoginRequest
+import com.houhackathon.greenmap_app.data.remote.dto.RegisterNotificationRequest
+import com.houhackathon.greenmap_app.data.remote.dto.DirectionsRequest
 import com.houhackathon.greenmap_app.domain.model.AiProvider
+import com.houhackathon.greenmap_app.domain.model.GeoPoint
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class RemoteDataSource @Inject constructor(
     private val apiService: ApiService,
+    private val osrmService: OsrmService,
 ) {
 
     suspend fun healthCheck() = safeApiCall { apiService.healthCheck() }
@@ -50,6 +55,30 @@ class RemoteDataSource @Inject constructor(
     suspend fun getHanoimoiNews(limit: Int) =
         safeApiCall { apiService.getHanoimoiNews(limit) }
 
+    suspend fun registerNotificationDevice(token: String, platform: String) =
+        safeApiCall { apiService.registerNotificationDevice(RegisterNotificationRequest(token, platform)) }
+
     suspend fun getAiWeatherInsights(provider: AiProvider, lat: Double?, lon: Double?) =
         safeApiCall { apiService.getAiWeatherInsights(provider.queryName, lat, lon) }
+
+    suspend fun getDirections(question: String, currentLat: Double, currentLon: Double, model: String) =
+        safeApiCall {
+            apiService.getDirections(
+                DirectionsRequest(
+                    question = question,
+                    currentLat = currentLat,
+                    currentLon = currentLon,
+                    model = model
+                )
+            )
+        }
+
+    suspend fun getOsrmRoute(start: GeoPoint, end: GeoPoint) = safeApiCall {
+        val startStr = "${start.lon},${start.lat}"
+        val endStr = "${end.lon},${end.lat}"
+        osrmService.getRoute(
+            start = startStr,
+            end = endStr,
+        )
+    }
 }

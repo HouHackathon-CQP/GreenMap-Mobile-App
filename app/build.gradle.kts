@@ -20,6 +20,8 @@ plugins {
     alias(libs.plugins.dagger.hilt.android)
     alias(libs.plugins.ksp)
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.google.services)
+    alias(libs.plugins.firebase.crashlytics)
 }
 
 android {
@@ -117,6 +119,12 @@ dependencies {
 
     // DataStore
     implementation(libs.androidx.datastore.preferences)
+
+    // --- Firebase ---
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.bundles.firebase)
+    implementation(libs.firebase.messaging)
+    implementation(libs.kotlinx.coroutines.play.services)
 
 
     // --- Utils ---

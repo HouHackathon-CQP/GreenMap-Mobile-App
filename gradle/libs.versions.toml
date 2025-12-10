@@ -38,9 +38,15 @@ ksp = "2.0.21-1.0.28"
 timber = "5.0.1"
 coil = "2.7.0"
 lottie = "6.6.0"
+# --- Coroutines Extensions ---
+coroutinesPlayServices = "1.8.1"
 #--- Nav 3 ---
 nav3Core = "1.0.0"
 playServicesLocation = "21.3.0"
+
+# --- Firebase ---
+googleServices = "4.4.2"
+firebaseBom = "33.7.0"
 
 # --- Testing ---
 junit = "4.13.2"
@@ -54,6 +60,17 @@ androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtx" }
 androidx-startup-runtime = { group = "androidx.startup", name = "startup-runtime", version.ref = "startupRuntime" }
+
+# --- Firebase ---
+firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
+firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics-ktx" }
+firebase-crashlytics = { group = "com.google.firebase", name = "firebase-crashlytics-ktx" }
+firebase-auth = { group = "com.google.firebase", name = "firebase-auth-ktx" }
+firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore-ktx" }
+firebase-storage = { group = "com.google.firebase", name = "firebase-storage-ktx" }
+firebase-messaging = { group = "com.google.firebase", name = "firebase-messaging-ktx" }
+firebase-remote-config = { group = "com.google.firebase", name = "firebase-config-ktx" }
+kotlinx-coroutines-play-services = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-play-services", version.ref = "coroutinesPlayServices" }
 
 # --- Jetpack Compose ---
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
@@ -116,6 +133,10 @@ kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", versi
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 dagger-hilt-android = { id = "com.google.dagger.hilt.android", version.ref = "daggerHilt" }
 
+google-services = { id = "com.google.gms.google-services", version.ref = "googleServices" }
+firebase-crashlytics = { id = "com.google.firebase.crashlytics", version = "3.0.2" }
+
+
 [bundles]
 compose = [
     "androidx-activity-compose",
@@ -145,4 +166,12 @@ room = [
 nav3 = [
     "androidx-navigation3-runtime",
     "androidx-navigation3-ui",
+]
+
+firebase = [
+    "firebase-analytics",
+    "firebase-crashlytics",
+    "firebase-auth",
+    "firebase-firestore",
+    "firebase-remote-config"
 ]

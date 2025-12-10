@@ -13,13 +13,18 @@
  * limitations under the License.
  */
 
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
-plugins {
-    alias(libs.plugins.android.application) apply false
-    alias(libs.plugins.kotlin.android) apply false
-    alias(libs.plugins.kotlin.compose) apply false
-    alias(libs.plugins.dagger.hilt.android) apply false
-    alias(libs.plugins.ksp) apply false
-    alias(libs.plugins.google.services) apply false
-    alias(libs.plugins.firebase.crashlytics) apply false
+package com.houhackathon.greenmap_app.domain.usecase
+
+import com.houhackathon.greenmap_app.domain.repository.DirectionRepository
+import javax.inject.Inject
+
+class GetDirectionsUseCase @Inject constructor(
+    private val repository: DirectionRepository,
+) {
+    suspend operator fun invoke(
+        question: String,
+        currentLat: Double,
+        currentLon: Double,
+        model: String? = null,
+    ) = repository.getDirections(question, currentLat, currentLon, model)
 }

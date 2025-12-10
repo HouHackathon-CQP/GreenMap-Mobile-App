@@ -15,6 +15,7 @@
 
 package com.houhackathon.greenmap_app
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -42,6 +43,7 @@ import com.houhackathon.greenmap_app.navigation.featureCSection
 import com.houhackathon.greenmap_app.navigation.profileSection
 import com.houhackathon.greenmap_app.navigation.rememberNavigationState
 import com.houhackathon.greenmap_app.navigation.toEntries
+import com.houhackathon.greenmap_app.core.notification.NotificationConstants
 import com.houhackathon.greenmap_app.ui.theme.setEdgeToEdgeConfig
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.serialization.Serializable
@@ -82,13 +84,16 @@ data class NavBarItem(
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    private var navigatorRef: Navigator? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         setEdgeToEdgeConfig()
         super.onCreate(savedInstanceState)
+        val startRoute = resolveStartRoute(intent)
         setContent {
             val navigationState =
                 rememberNavigationState(
-                    startRoute = Home,
+                    startRoute = startRoute,
                     topLevelRoutes = TOP_LEVEL_ROUTES.keys
                 )
 
@@ -97,6 +102,7 @@ class MainActivity : ComponentActivity() {
                     navigationState
                 )
             }
+            navigatorRef = navigator
 
             val entryProvider = entryProvider {
                 featureASection(onNavigateMap = { navigator.navigate(Map) })
@@ -130,5 +136,21 @@ class MainActivity : ComponentActivity() {
                 )
             }
         }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        if (shouldOpenNotification(intent)) {
+            navigatorRef?.navigate(Notification)
+        }
+    }
+
+    private fun resolveStartRoute(intent: Intent?): NavKey {
+        return if (shouldOpenNotification(intent)) Notification else Home
+    }
+
+    private fun shouldOpenNotification(intent: Intent?): Boolean {
+        return intent?.getStringExtra(NotificationConstants.EXTRA_TARGET_ROUTE) == NotificationConstants.TARGET_ROUTE_NOTIFICATION
     }
 }

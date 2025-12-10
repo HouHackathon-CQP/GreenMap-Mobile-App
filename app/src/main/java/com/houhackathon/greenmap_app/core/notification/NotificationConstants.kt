@@ -13,13 +13,16 @@
  * limitations under the License.
  */
 
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
-plugins {
-    alias(libs.plugins.android.application) apply false
-    alias(libs.plugins.kotlin.android) apply false
-    alias(libs.plugins.kotlin.compose) apply false
-    alias(libs.plugins.dagger.hilt.android) apply false
-    alias(libs.plugins.ksp) apply false
-    alias(libs.plugins.google.services) apply false
-    alias(libs.plugins.firebase.crashlytics) apply false
+package com.houhackathon.greenmap_app.core.notification
+
+object NotificationConstants {
+    const val CHANNEL_ID_ALERTS = "greenmap_alerts"
+    const val CHANNEL_NAME_ALERTS = "GreenMap Alerts"
+    const val CHANNEL_DESCRIPTION_ALERTS = "Cac thong bao duoc day tu server GreenMap"
+
+    const val EXTRA_TARGET_ROUTE = "extra_target_route"
+    const val EXTRA_NOTIFICATION_ID = "extra_notification_id"
+    const val EXTRA_DEEPLINK = "extra_deeplink"
+    const val TARGET_ROUTE_NOTIFICATION = "notification"
+    const val PLATFORM_ANDROID = "android"
 }

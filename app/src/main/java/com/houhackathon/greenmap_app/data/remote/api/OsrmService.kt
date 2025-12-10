@@ -13,13 +13,20 @@
  * limitations under the License.
  */
 
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
-plugins {
-    alias(libs.plugins.android.application) apply false
-    alias(libs.plugins.kotlin.android) apply false
-    alias(libs.plugins.kotlin.compose) apply false
-    alias(libs.plugins.dagger.hilt.android) apply false
-    alias(libs.plugins.ksp) apply false
-    alias(libs.plugins.google.services) apply false
-    alias(libs.plugins.firebase.crashlytics) apply false
+package com.houhackathon.greenmap_app.data.remote.api
+
+import com.houhackathon.greenmap_app.data.remote.dto.OsrmRouteResponse
+import retrofit2.Response
+import retrofit2.http.GET
+import retrofit2.http.Path
+import retrofit2.http.Query
+
+interface OsrmService {
+    @GET("route/v1/driving/{start};{end}")
+    suspend fun getRoute(
+        @Path("start") start: String, // lon,lat
+        @Path("end") end: String, // lon,lat
+        @Query("geometries") geometries: String = "geojson",
+        @Query("overview") overview: String = "full",
+    ): Response<OsrmRouteResponse>
 }

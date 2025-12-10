@@ -18,9 +18,13 @@ package com.houhackathon.greenmap_app.core.location
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
+import android.location.Location
 import androidx.core.content.ContextCompat
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationResult
 import com.houhackathon.greenmap_app.extension.flow.Result
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
@@ -28,6 +32,10 @@ import javax.inject.Singleton
 import kotlinx.coroutines.CancellableContinuation
 import kotlin.coroutines.resume
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
 
 @Singleton
 class LocationProvider @Inject constructor(
@@ -75,5 +83,35 @@ class LocationProvider @Inject constructor(
             .addOnFailureListener { error ->
                 if (cont.isActive) cont.resume(Result.error(error))
             }
+    }
+
+    fun observeLocationUpdates(
+        intervalMillis: Long = 1000L,
+        minDistanceMeters: Float = 5f
+    ): Flow<Location> = callbackFlow {
+        if (!hasLocationPermission()) {
+            close(SecurityException("Location permission not granted"))
+            return@callbackFlow
+        }
+        val request = LocationRequest.Builder(
+            Priority.PRIORITY_HIGH_ACCURACY,
+            intervalMillis
+        ).apply {
+            setMinUpdateIntervalMillis(intervalMillis / 2)
+            setMinUpdateDistanceMeters(minDistanceMeters)
+        }.build()
+
+        val callback = object : LocationCallback() {
+            override fun onLocationResult(result: LocationResult) {
+                result.lastLocation?.let { trySend(it).isSuccess }
+            }
+        }
+
+        fusedClient.requestLocationUpdates(request, callback, context.mainLooper)
+        awaitClose { fusedClient.removeLocationUpdates(callback) }
+    }.distinctUntilChanged { old, new ->
+        // Avoid noisy updates if movement is negligible
+        val distance = old.distanceTo(new)
+        distance < minDistanceMeters && old.bearing == new.bearing
     }
 }

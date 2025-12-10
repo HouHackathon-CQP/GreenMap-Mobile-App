@@ -21,12 +21,18 @@ import com.houhackathon.greenmap_app.data.repository.WeatherRepositoryImpl
 import com.houhackathon.greenmap_app.data.repository.LocationRepositoryImpl
 import com.houhackathon.greenmap_app.data.repository.NewsRepositoryImpl
 import com.houhackathon.greenmap_app.data.repository.AiInsightCacheRepositoryImpl
+import com.houhackathon.greenmap_app.data.repository.NotificationRepositoryImpl
+import com.houhackathon.greenmap_app.data.repository.DirectionRepositoryImpl
+import com.houhackathon.greenmap_app.data.repository.RoutingRepositoryImpl
 import com.houhackathon.greenmap_app.domain.repository.HealthRepository
 import com.houhackathon.greenmap_app.domain.repository.AuthRepository
 import com.houhackathon.greenmap_app.domain.repository.WeatherRepository
 import com.houhackathon.greenmap_app.domain.repository.LocationRepository
 import com.houhackathon.greenmap_app.domain.repository.NewsRepository
 import com.houhackathon.greenmap_app.domain.repository.AiInsightCacheRepository
+import com.houhackathon.greenmap_app.domain.repository.NotificationRepository
+import com.houhackathon.greenmap_app.domain.repository.DirectionRepository
+import com.houhackathon.greenmap_app.domain.repository.RoutingRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -59,4 +65,16 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindAiInsightCacheRepository(impl: AiInsightCacheRepositoryImpl): AiInsightCacheRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindNotificationRepository(impl: NotificationRepositoryImpl): NotificationRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindDirectionRepository(impl: DirectionRepositoryImpl): DirectionRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindRoutingRepository(impl: RoutingRepositoryImpl): RoutingRepository
 }

@@ -22,5 +22,15 @@ object NetworkConfig {
     const val DEFAULT_TIMEOUT_SECONDS = 30L
 
     val baseUrl: String
-        get() = BuildConfig.API_BASE_URL.takeIf { it.isNotBlank() } ?: DEFAULT_BASE_URL
+        get() = normalizeBaseUrl(BuildConfig.API_BASE_URL.takeIf { it.isNotBlank() } ?: DEFAULT_BASE_URL)
+
+    private fun normalizeBaseUrl(url: String): String {
+        var result = url
+        if (result.contains("127.0.0.1") || result.contains("localhost")) {
+            result = result
+                .replace("127.0.0.1", "10.0.2.2")
+                .replace("localhost", "10.0.2.2")
+        }
+        return if (result.endsWith("/")) result else "$result/"
+    }
 }
